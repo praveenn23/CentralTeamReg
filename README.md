@@ -1,70 +1,128 @@
-# Getting Started with Create React App
+# Club Registration System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack application for managing club registrations at Chandigarh University.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Student registration form with multiple sections
+- File upload for resumes
+- Form validation
+- Admin dashboard for managing registrations
+- MongoDB database integration
+- RESTful API endpoints
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js (v14 or higher)
+- MongoDB (v4.4 or higher)
+- npm or yarn package manager
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Setup Instructions
 
-### `npm test`
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd club-registration
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Install frontend dependencies:
+```bash
+npm install
+```
 
-### `npm run build`
+3. Install backend dependencies:
+```bash
+cd server
+npm install
+cd ..
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Create a `.env` file in the server directory with the following content:
+```
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/club-registration
+JWT_SECRET=your_jwt_secret_key_here
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+5. Create an `uploads` directory in the server folder:
+```bash
+cd server
+mkdir uploads
+cd ..
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Running the Application
 
-### `npm run eject`
+1. Start both frontend and backend servers:
+```bash
+npm run dev
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+This will start:
+- Frontend on http://localhost:3000
+- Backend on http://localhost:5000
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. To run only the frontend:
+```bash
+npm start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. To run only the backend:
+```bash
+npm run server
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## API Endpoints
 
-## Learn More
+### Registration Endpoints
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- `POST /api/registration` - Submit a new registration
+- `GET /api/registration` - Get all registrations (admin only)
+- `GET /api/registration/:id` - Get a specific registration
+- `PATCH /api/registration/:id/status` - Update registration status (admin only)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Project Structure
 
-### Code Splitting
+```
+club-registration/
+├── public/
+├── src/
+│   ├── App.js
+│   ├── App.css
+│   └── ...
+├── server/
+│   ├── models/
+│   │   └── Registration.js
+│   ├── routes/
+│   │   └── registration.js
+│   ├── uploads/
+│   ├── index.js
+│   └── .env
+└── package.json
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Technologies Used
 
-### Analyzing the Bundle Size
+- Frontend:
+  - React
+  - CSS3
+  - HTML5
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- Backend:
+  - Node.js
+  - Express.js
+  - MongoDB
+  - Mongoose
+  - Multer (for file uploads)
 
-### Making a Progressive Web App
+## Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Advanced Configuration
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License.

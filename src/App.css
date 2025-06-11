@@ -10,8 +10,8 @@
   justify-content: flex-start;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: royalblue;
-  color: white;
+  background-color: #F5F5DC; /* beige */
+  color: #333; /* darker text for better contrast on beige */
 }
 
 .logo-container {
@@ -61,12 +61,13 @@ form {
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #F5F5DC; /* beige border */
 }
 
 .form-section h2 {
   margin-bottom: 1.5rem;
   color: #333;
-  border-bottom: 2px solid royalblue;
+  border-bottom: 2px solid #F5F5DC; /* beige */
   padding-bottom: 0.5rem;
 }
 
@@ -131,7 +132,7 @@ textarea {
 
 .submit-button {
   padding: 1rem 3rem;
-  background-color: royalblue;
+  background-color: #f87171; /* red-400 */
   color: white;
   border: none;
   border-radius: 4px;
@@ -141,7 +142,12 @@ textarea {
 }
 
 .submit-button:hover {
-  background-color: #2d4ed8;
+  background-color: #ef4444; /* red-500 for hover state */
+}
+
+.submit-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 .footer {
@@ -203,4 +209,22 @@ textarea {
   to {
     transform: rotate(360deg);
   }
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #ef9a9a;
+}
+
+.success-message {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #a5d6a7;
 }

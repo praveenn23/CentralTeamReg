@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
+import SuccessPage from './components/SuccessPage';
 
-function App() {
+function RegistrationForm() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     // Section 1: Student Details
     fullName: '',
@@ -23,6 +26,10 @@ function App() {
     // Section 4: Terms & Conditions
     terms: [false, false, false, false]
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -46,10 +53,44 @@ function App() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log(formData);
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const formDataToSend = new FormData();
+      
+      // Append all form fields to FormData
+      Object.keys(formData).forEach(key => {
+        if (key === 'terms') {
+          formDataToSend.append(key, JSON.stringify(formData[key]));
+        } else if (key === 'resume' && formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      const response = await fetch('http://localhost:5000/api/registration', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      // Navigate to success page on successful submission
+      navigate('/success');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -62,6 +103,9 @@ function App() {
       </header>
 
       <div className="form-container">
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
         <form onSubmit={handleSubmit}>
           {/* Section 1: Student Details */}
           <section className="form-section">
@@ -230,15 +274,32 @@ function App() {
           </section>
 
           <div className="submit-container">
-            <button type="submit" className="submit-button">Submit Application</button>
+            <button 
+              type="submit" 
+              className="submit-button"
+              disabled={loading}
+            >
+              {loading ? 'Submitting...' : 'Submit Application'}
+            </button>
           </div>
         </form>
       </div>
 
       <footer className="footer">
-        <p>© Department of Academic Affairs & Praveen Kumar</p>
+        <p>© Department of Academic Affairs</p>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<RegistrationForm />} />
+        <Route path="/success" element={<SuccessPage />} />
+      </Routes>
+    </Router>
   );
 }
 
