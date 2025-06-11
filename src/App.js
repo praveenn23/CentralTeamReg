@@ -1,0 +1,245 @@
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [formData, setFormData] = useState({
+    // Section 1: Student Details
+    fullName: '',
+    uid: '',
+    department: '',
+    phoneNumber: '',
+    email: '',
+
+    // Section 2: Previous Experience
+    leadershipRoles: '',
+    majorEvents: '',
+    teamStrategy: '',
+    multitaskingAbility: '',
+
+    // Section 3: Academic Info
+    cgpa: '',
+    resume: null,
+
+    // Section 4: Terms & Conditions
+    terms: [false, false, false, false]
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      resume: e.target.files[0]
+    }));
+  };
+
+  const handleTermsChange = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      terms: prev.terms.map((term, i) => i === index ? !term : term)
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log(formData);
+  };
+
+  return (
+    <div className="app">
+      <header className="header">
+        <div className="logo-container">
+          {/* <img src="/cu-logo.png" alt="Chandigarh University Logo" className="logo" /> */}
+          <img src="/academic-affairs-logo.png" alt="Department of Academic Affairs Logo" className="logo" />
+        </div>
+      </header>
+
+      <div className="form-container">
+        <form onSubmit={handleSubmit}>
+          {/* Section 1: Student Details */}
+          <section className="form-section">
+            <h2>Student Details</h2>
+            <div className="input-group">
+              <label>Full Name</label>
+              <input
+                type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>UID</label>
+              <input
+                type="text"
+                name="uid"
+                value={formData.uid}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Department</label>
+              <input
+                type="text"
+                name="department"
+                value={formData.department}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Phone Number</label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Email Address</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </section>
+
+          {/* Section 2: Previous Experience */}
+          <section className="form-section">
+            <h2>Previous Experience</h2>
+            <div className="input-group">
+              <label>Previous Leadership Roles</label>
+              <textarea
+                name="leadershipRoles"
+                value={formData.leadershipRoles}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Major Events Organized</label>
+              <textarea
+                name="majorEvents"
+                value={formData.majorEvents}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Team Management Strategy</label>
+              <textarea
+                name="teamStrategy"
+                value={formData.teamStrategy}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Multitasking Ability</label>
+              <textarea
+                name="multitaskingAbility"
+                value={formData.multitaskingAbility}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </section>
+
+          {/* Section 3: Academic Info & Resume */}
+          <section className="form-section">
+            <h2>Academic Information</h2>
+            <div className="input-group">
+              <label>Current CGPA</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="10"
+                name="cgpa"
+                value={formData.cgpa}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="input-group">
+              <label>Resume Upload</label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+                required
+              />
+            </div>
+          </section>
+
+          {/* Section 4: Terms & Conditions */}
+          <section className="form-section terms-section">
+            <h2>Terms & Conditions</h2>
+            <div className="terms">
+              <label className="terms-label">
+                <input
+                  type="checkbox"
+                  checked={formData.terms[0]}
+                  onChange={() => handleTermsChange(0)}
+                  required
+                />
+                <span>1. Accuracy of Information: I confirm that all the information provided in this form is accurate and true to the best of my knowledge.</span>
+              </label>
+              <label className="terms-label">
+                <input
+                  type="checkbox"
+                  checked={formData.terms[1]}
+                  onChange={() => handleTermsChange(1)}
+                  required
+                />
+                <span>2. Code of Conduct Compliance: I agree to follow all rules, regulations, and the code of conduct set by the Department of Academic Affairs and the university club.</span>
+              </label>
+              <label className="terms-label">
+                <input
+                  type="checkbox"
+                  checked={formData.terms[2]}
+                  onChange={() => handleTermsChange(2)}
+                  required
+                />
+                <span>3. Society Role Restriction: I confirm that I am not currently serving as a Secretary or Joint Secretary of any other society.</span>
+              </label>
+              <label className="terms-label">
+                <input
+                  type="checkbox"
+                  checked={formData.terms[3]}
+                  onChange={() => handleTermsChange(3)}
+                  required
+                />
+                <span>4. Eligibility & Availability: I am a 3rd or 4th-year student and am available to attend offline meetings on a weekly basis.</span>
+              </label>
+            </div>
+          </section>
+
+          <div className="submit-container">
+            <button type="submit" className="submit-button">Submit Application</button>
+          </div>
+        </form>
+      </div>
+
+      <footer className="footer">
+        <p>© Department of Academic Affairs & Praveen Kumar</p>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
