@@ -1,0 +1,135 @@
+.evaluation {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.evaluation h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.evaluation-content {
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.evaluation-content p {
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+tr:hover {
+  background-color: #f8f9fa;
+}
+
+input[type="number"] {
+  width: 60px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+}
+
+input[type="number"]:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+input[type="number"]:invalid {
+  border-color: #dc3545;
+  background-color: #fff8f8;
+}
+
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 120px;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Style for selected option */
+select option[value="selected"] {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* Style for not selected option */
+select option[value="notSelected"] {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Style for the select when selected value is "selected" */
+select[value="selected"] {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+/* Style for the select when selected value is "notSelected" */
+select[value="notSelected"] {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error {
+  color: #dc3545;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+}
+
+/* Add styles for the total column */
+td:last-child {
+  font-weight: bold;
+  color: #28a745;
+} 

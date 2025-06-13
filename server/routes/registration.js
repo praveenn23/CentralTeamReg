@@ -11,7 +11,9 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+    // Store only the filename
+    const uniqueFilename = Date.now() + '-' + file.originalname;
+    cb(null, uniqueFilename);
   }
 });
 
@@ -35,7 +37,7 @@ router.post('/', upload.single('resume'), async (req, res) => {
   try {
     const registrationData = {
       ...req.body,
-      resume: req.file ? req.file.path : null,
+      resume: req.file ? `uploads/${req.file.filename}` : null,
       terms: JSON.parse(req.body.terms)
     };
 

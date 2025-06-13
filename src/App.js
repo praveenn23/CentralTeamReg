@@ -1,7 +1,38 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from 'react-router-dom';
 import './App.css';
 import SuccessPage from './components/SuccessPage';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+import ManageRegistrations from './components/ManageRegistrations';
+import Evaluation from './components/Evaluation';
+
+function Header() {
+  const navigate = useNavigate();
+  const isAdmin = localStorage.getItem('adminToken');
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminInfo');
+    navigate('/');
+  };
+
+  return (
+    <header className="header">
+      <div className="logo-container">
+        {/* <img src="/cu-logo.png" alt="Chandigarh University Logo" className="logo" /> */}
+        <img src="/academic-affairs-logo.png" alt="Department of Academic Affairs Logo" className="logo" />
+      </div>
+      <div className="admin-section">
+        {isAdmin ? (
+          <button onClick={handleLogout} className="admin-button">Logout</button>
+        ) : (
+          <Link to="/admin/login" className="admin-button">Admin Login</Link>
+        )}
+      </div>
+    </header>
+  );
+}
 
 function RegistrationForm() {
   const navigate = useNavigate();
@@ -95,13 +126,7 @@ function RegistrationForm() {
 
   return (
     <div className="app">
-      <header className="header">
-        <div className="logo-container">
-          {/* <img src="/cu-logo.png" alt="Chandigarh University Logo" className="logo" /> */}
-          <img src="/academic-affairs-logo.png" alt="Department of Academic Affairs Logo" className="logo" />
-        </div>
-      </header>
-
+      {/* <Header /> */}
       <div className="form-container">
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
@@ -295,10 +320,17 @@ function RegistrationForm() {
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<RegistrationForm />} />
-        <Route path="/success" element={<SuccessPage />} />
-      </Routes>
+      <div className="app">
+        <Header />
+        <Routes>
+          <Route path="/" element={<RegistrationForm />} />
+          <Route path="/success" element={<SuccessPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/manage-registrations" element={<ManageRegistrations />} />
+          <Route path="/admin/evaluation" element={<Evaluation />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
