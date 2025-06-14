@@ -20,7 +20,7 @@ const Evaluation = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/admin/evaluations', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/evaluations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -72,7 +72,7 @@ const Evaluation = () => {
       );
 
       // Send update to server
-      const response = await fetch(`http://localhost:5000/api/admin/evaluations/${registrationId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/evaluations/${registrationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ const Evaluation = () => {
       );
 
       // Send update to server
-      const response = await fetch(`http://localhost:5000/api/admin/evaluations/${registrationId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/evaluations/${registrationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -22,7 +22,7 @@ const ManageRegistrations = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/admin/registrations', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/registrations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -60,7 +60,7 @@ const ManageRegistrations = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`http://localhost:5000/api/admin/registrations/${registrationId}/status`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/registrations/${registrationId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
