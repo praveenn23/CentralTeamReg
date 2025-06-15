@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from 'react-router-dom';
 import './App.css';
 import SuccessPage from './components/SuccessPage';
@@ -9,22 +9,35 @@ import Evaluation from './components/Evaluation';
 
 function Header() {
   const navigate = useNavigate();
-  const isAdmin = localStorage.getItem('adminToken');
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(!!localStorage.getItem('adminToken'));
+
+  useEffect(() => {
+    // This effect ensures the button state updates if the token changes outside of direct logout
+    const checkAdminStatus = () => {
+      setIsAdminLoggedIn(!!localStorage.getItem('adminToken'));
+    };
+    window.addEventListener('storage', checkAdminStatus);
+    return () => {
+      window.removeEventListener('storage', checkAdminStatus);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminInfo');
+    setIsAdminLoggedIn(false); // Update state to reflect logout
     navigate('/');
   };
 
   return (
     <header className="header">
       <div className="logo-container">
-        {/* <img src="/cu-logo.png" alt="Chandigarh University Logo" className="logo" /> */}
-        <img src="/academic-affairs-logo.png" alt="Department of Academic Affairs Logo" className="logo" />
+        <Link to="/">
+          <img src="/academic-affairs-logo.png" alt="Department of Academic Affairs Logo" className="logo" />
+        </Link>
       </div>
       <div className="admin-section">
-        {isAdmin ? (
+        {isAdminLoggedIn ? (
           <button onClick={handleLogout} className="admin-button">Logout</button>
         ) : (
           <Link to="/admin/login" className="admin-button">Admin Login</Link>
@@ -126,7 +139,7 @@ function RegistrationForm() {
 
   return (
     <div className="app">
-      {/* <Header /> */}
+      <Header />
       <div className="form-container">
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
@@ -320,17 +333,15 @@ function RegistrationForm() {
 function App() {
   return (
     <Router>
-      <div className="app">
-        <Header />
-        <Routes>
-          <Route path="/" element={<RegistrationForm />} />
-          <Route path="/success" element={<SuccessPage />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/manage-registrations" element={<ManageRegistrations />} />
-          <Route path="/admin/evaluation" element={<Evaluation />} />
-        </Routes>
-      </div>
+      <Header />
+      <Routes>
+        <Route path="/" element={<RegistrationForm />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/registrations" element={<ManageRegistrations />} />
+        <Route path="/admin/evaluations/:registrationId" element={<Evaluation />} />
+      </Routes>
     </Router>
   );
 }
