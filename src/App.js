@@ -139,7 +139,6 @@ function RegistrationForm() {
 
   return (
     <div className="app">
-      <Header />
       <div className="form-container">
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
@@ -258,74 +257,70 @@ function RegistrationForm() {
               />
             </div>
             <div className="input-group">
-              <label>Resume Upload</label>
+              <label>Upload Resume (PDF/DOC/DOCX)</label>
               <input
                 type="file"
+                name="resume"
                 accept=".pdf,.doc,.docx"
                 onChange={handleFileChange}
-                required
               />
             </div>
           </section>
 
           {/* Section 4: Terms & Conditions */}
-          <section className="form-section terms-section">
+          <section className="form-section">
             <h2>Terms & Conditions</h2>
-            <div className="terms">
-              <label className="terms-label">
+            <div className="terms-group">
+              <label>
                 <input
                   type="checkbox"
                   checked={formData.terms[0]}
                   onChange={() => handleTermsChange(0)}
                   required
                 />
-                <span>1. Accuracy of Information: I confirm that all the information provided in this form is accurate and true to the best of my knowledge.</span>
+                I agree to abide by the rules and regulations of Chandigarh University and the club.
               </label>
-              <label className="terms-label">
+            </div>
+            <div className="terms-group">
+              <label>
                 <input
                   type="checkbox"
                   checked={formData.terms[1]}
                   onChange={() => handleTermsChange(1)}
                   required
                 />
-                <span>2. Code of Conduct Compliance: I agree to follow all rules, regulations, and the code of conduct set by the Department of Academic Affairs and the university club.</span>
+                I certify that all the information provided is accurate and true to the best of my knowledge.
               </label>
-              <label className="terms-label">
+            </div>
+            <div className="terms-group">
+              <label>
                 <input
                   type="checkbox"
                   checked={formData.terms[2]}
                   onChange={() => handleTermsChange(2)}
                   required
                 />
-                <span>3. Society Role Restriction: I confirm that I am not currently serving as a Secretary or Joint Secretary of any other society.</span>
+                I understand that submitting false information may lead to the cancellation of my registration.
               </label>
-              <label className="terms-label">
+            </div>
+            <div className="terms-group">
+              <label>
                 <input
                   type="checkbox"
                   checked={formData.terms[3]}
                   onChange={() => handleTermsChange(3)}
                   required
                 />
-                <span>4. Eligibility & Availability: I am a 3rd or 4th-year student and am available to attend offline meetings on a weekly basis.</span>
+                I grant permission for my resume and other submitted details to be reviewed for the purpose of club registration.
               </label>
             </div>
           </section>
 
-          <div className="submit-container">
-            <button 
-              type="submit" 
-              className="submit-button"
-              disabled={loading}
-            >
-              {loading ? 'Submitting...' : 'Submit Application'}
-            </button>
-          </div>
+          <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? 'Submitting...' : 'Submit Registration'}
+          </button>
         </form>
       </div>
-
-      <footer className="footer">
-        <p>© Department of Academic Affairs</p>
-      </footer>
     </div>
   );
 }
