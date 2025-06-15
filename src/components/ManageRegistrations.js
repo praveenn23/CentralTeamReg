@@ -160,7 +160,7 @@ const ManageRegistrations = () => {
               </div>
               {selectedRegistration.resume && (
                 <a 
-                  href={`http://localhost:5000/${selectedRegistration.resume}`}
+                  href={`${process.env.REACT_APP_API_URL}/uploads/${selectedRegistration.resume}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="resume-link"
