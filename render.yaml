@@ -2,7 +2,7 @@ services:
   - type: web
     name: central-team-reg-backend
     env: node
-    buildCommand: cd server && npm install && npm install -g nodemon
+    buildCommand: cd server && npm install
     startCommand: cd server && node index.js
     envVars:
       - key: NODE_ENV
@@ -20,4 +20,6 @@ services:
       - key: ADMIN_EMAIL
         value: admin@example.com
       - key: PORT
-        value: 5000 
+        value: 5000
+    healthCheckPath: /health
+    autoDeploy: true 

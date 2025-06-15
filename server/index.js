@@ -37,28 +37,34 @@ app.use((req, res, next) => {
   next();
 });
 
+// Routes
+const registrationRoutes = require('./routes/registration');
+const adminRoutes = require('./routes/admin');
+
+// Mount routes with explicit paths
+app.use('/api/registration', registrationRoutes);
+app.use('/api/admin', adminRoutes);
+
 // Test route
 app.get('/api/test', (req, res) => {
+  console.log('Test route hit');
   res.json({ message: 'API is working' });
 });
 
 // Health check route
 app.get('/health', (req, res) => {
+  console.log('Health check route hit');
   res.json({ 
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    routes: {
+      admin: '/api/admin',
+      registration: '/api/registration'
+    }
   });
 });
-
-// Routes
-const registrationRoutes = require('./routes/registration');
-const adminRoutes = require('./routes/admin');
-
-// Mount routes
-app.use('/api/registration', registrationRoutes);
-app.use('/api/admin', adminRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -75,7 +81,14 @@ app.use((req, res) => {
   res.status(404).json({ 
     message: 'Route not found',
     path: req.url,
-    method: req.method
+    method: req.method,
+    availableRoutes: [
+      '/api/test',
+      '/health',
+      '/api/admin/login',
+      '/api/admin/test',
+      '/api/registration'
+    ]
   });
 });
 
@@ -112,7 +125,6 @@ app.listen(PORT, () => {
   console.log('- GET /api/test');
   console.log('- GET /health');
   console.log('- POST /api/admin/login');
+  console.log('- GET /api/admin/test');
   console.log('- POST /api/registration');
-  console.log('- GET /api/admin/registrations');
-  console.log('- GET /api/admin/evaluations');
 }); 

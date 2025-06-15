@@ -16,7 +16,9 @@ router.get('/test', (req, res) => {
 router.post('/login', async (req, res) => {
   console.log('Login attempt received:', {
     body: req.body,
-    headers: req.headers
+    headers: req.headers,
+    url: req.url,
+    method: req.method
   });
 
   try {
@@ -287,4 +289,5 @@ router.put('/evaluations/:registrationId', auth, async (req, res) => {
   }
 });
 
+// Export the router
 module.exports = router; 
