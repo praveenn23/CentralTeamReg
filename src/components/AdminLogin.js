@@ -24,6 +24,11 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting login with:', {
+        url: `${process.env.REACT_APP_API_URL}/api/admin/login`,
+        credentials
+      });
+
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/login`, {
         method: 'POST',
         headers: {
@@ -33,13 +38,18 @@ const AdminLogin = () => {
         body: JSON.stringify(credentials)
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
       // Check if the response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
+        console.error('Invalid content type:', contentType);
         throw new Error('Server error: Invalid response format');
       }
 
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');

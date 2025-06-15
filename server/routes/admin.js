@@ -8,13 +8,18 @@ const auth = require('../middleware/auth');
 
 // Test admin route
 router.get('/test', (req, res) => {
+  console.log('Admin test route hit');
   res.json({ message: 'Admin routes are working' });
 });
 
 // Admin login
 router.post('/login', async (req, res) => {
+  console.log('Login attempt received:', {
+    body: req.body,
+    headers: req.headers
+  });
+
   try {
-    console.log('Login attempt:', req.body);
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -26,6 +31,7 @@ router.post('/login', async (req, res) => {
 
     console.log('Looking for admin with username:', username);
     const admin = await Admin.findOne({ username });
+    
     if (!admin) {
       console.log('Admin not found');
       return res.status(401).json({ 
@@ -35,6 +41,7 @@ router.post('/login', async (req, res) => {
 
     console.log('Comparing passwords');
     const isMatch = await admin.comparePassword(password);
+    
     if (!isMatch) {
       console.log('Password mismatch');
       return res.status(401).json({ 
