@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const Admin = require('./models/Admin');
 
 // Load environment variables
 dotenv.config();
@@ -13,6 +14,7 @@ console.log('MONGODB_URI:', process.env.MONGODB_URI ? '✓ Set' : '✗ Missing')
 console.log('PORT:', process.env.PORT ? '✓ Set' : '✗ Missing');
 console.log('EMAIL_USER:', process.env.EMAIL_USER ? '✓ Set' : '✗ Missing');
 console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '✓ Set' : '✗ Missing');
+console.log('FRONTEND_URL:', process.env.FRONTEND_URL ? '✓ Set' : '✗ Missing');
 
 // Routes
 const registrationRoutes = require('./routes/registration');
@@ -43,7 +45,25 @@ app.use((req, res, next) => {
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/club-registration')
-  .then(() => console.log('Connected to MongoDB'))
+  .then(async () => {
+    console.log('Connected to MongoDB');
+    
+    // Create initial admin user if it doesn't exist
+    try {
+      const adminCount = await Admin.countDocuments();
+      if (adminCount === 0) {
+        const admin = new Admin({
+          username: process.env.ADMIN_USERNAME || 'admin',
+          password: process.env.ADMIN_PASSWORD || 'admin123',
+          email: process.env.ADMIN_EMAIL || 'admin@example.com'
+        });
+        await admin.save();
+        console.log('Initial admin user created successfully');
+      }
+    } catch (error) {
+      console.error('Error creating initial admin:', error);
+    }
+  })
   .catch((err) => console.error('MongoDB connection error:', err));
 
 // Test route
