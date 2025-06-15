@@ -37,7 +37,7 @@ router.post('/', upload.single('resume'), async (req, res) => {
   try {
     const registrationData = {
       ...req.body,
-      resume: req.file ? `uploads/${req.file.filename}` : null,
+      resume: req.file ? req.file.filename : null,
       terms: JSON.parse(req.body.terms)
     };
 
