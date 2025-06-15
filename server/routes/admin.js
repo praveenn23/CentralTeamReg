@@ -18,31 +18,38 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
+      console.log('Missing credentials');
       return res.status(400).json({ 
         message: 'Username and password are required' 
       });
     }
 
+    console.log('Looking for admin with username:', username);
     const admin = await Admin.findOne({ username });
     if (!admin) {
+      console.log('Admin not found');
       return res.status(401).json({ 
         message: 'Invalid credentials' 
       });
     }
 
+    console.log('Comparing passwords');
     const isMatch = await admin.comparePassword(password);
     if (!isMatch) {
+      console.log('Password mismatch');
       return res.status(401).json({ 
         message: 'Invalid credentials' 
       });
     }
 
+    console.log('Generating token');
     const token = jwt.sign(
       { id: admin._id, username: admin.username },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
 
+    console.log('Login successful');
     res.json({
       token,
       admin: {
@@ -52,9 +59,10 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error details:', error);
     res.status(500).json({ 
-      message: 'An error occurred during login' 
+      message: 'An error occurred during login',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
