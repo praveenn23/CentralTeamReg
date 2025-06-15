@@ -2,7 +2,7 @@ services:
   - type: web
     name: central-team-reg-backend
     env: node
-    buildCommand: cd server && npm install
+    buildCommand: cd server && npm install && npm install -g nodemon
     startCommand: cd server && node index.js
     envVars:
       - key: NODE_ENV
