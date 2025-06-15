@@ -19,7 +19,7 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-  origin: '*',
+  origin: '*', // Keep permissive for now to rule out CORS issues
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
@@ -28,12 +28,13 @@ app.use(cors({
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Re-add static files
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-  console.log('Request Headers:', req.headers);
-  console.log('Request Body:', req.body);
+  console.log(`${new Date().toISOString()} - Request: ${req.method} ${req.url}`);
+  // console.log('Request Headers:', req.headers); // Comment out verbose logging for now
+  // console.log('Request Body:', req.body); // Comment out verbose logging for now
   next();
 });
 
@@ -44,6 +45,12 @@ const adminRoutes = require('./routes/admin');
 // Mount routes with explicit paths
 app.use('/api/registration', registrationRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Basic root route
+app.get('/', (req, res) => {
+  console.log('Root route hit');
+  res.send('Backend root is working!');
+});
 
 // Test route
 app.get('/api/test', (req, res) => {
@@ -61,7 +68,10 @@ app.get('/health', (req, res) => {
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
     routes: {
       admin: '/api/admin',
-      registration: '/api/registration'
+      registration: '/api/registration',
+      test: '/api/test',
+      health: '/health',
+      root: '/'
     }
   });
 });
@@ -87,7 +97,8 @@ app.use((req, res) => {
       '/health',
       '/api/admin/login',
       '/api/admin/test',
-      '/api/registration'
+      '/api/registration',
+      '/'
     ]
   });
 });
@@ -122,6 +133,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log('Available routes:');
+  console.log('- GET /');
   console.log('- GET /api/test');
   console.log('- GET /health');
   console.log('- POST /api/admin/login');
