@@ -33,13 +33,25 @@ const upload = multer({
 });
 
 // Submit registration
-router.post('/', upload.single('resume'), async (req, res) => {
+router.post('/', upload.fields([
+  { name: 'resume', maxCount: 1 },
+  { name: 'sop', maxCount: 1 },
+  { name: 'recommendationLetter', maxCount: 1 },
+]), async (req, res) => {
   try {
     const registrationData = {
       ...req.body,
-      resume: req.file ? req.file.filename : null,
+      resume: req.files && req.files.resume ? req.files.resume[0].filename : null,
+      sop: req.files && req.files.sop ? req.files.sop[0].filename : null,
+      recommendationLetter: req.files && req.files.recommendationLetter ? req.files.recommendationLetter[0].filename : null,
       terms: JSON.parse(req.body.terms)
     };
+
+    // Ensure other new fields are correctly included if they exist in req.body
+    if (req.body.yourPosition) registrationData.yourPosition = req.body.yourPosition;
+    if (req.body.otherPositionName) registrationData.otherPositionName = req.body.otherPositionName;
+    if (req.body.nameOfEntity) registrationData.nameOfEntity = req.body.nameOfEntity;
+    if (req.body.linkedinAccount) registrationData.linkedinAccount = req.body.linkedinAccount;
 
     const registration = new Registration(registrationData);
     await registration.save();

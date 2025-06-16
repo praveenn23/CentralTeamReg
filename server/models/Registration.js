@@ -13,7 +13,12 @@ const registrationSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
-  department: {
+  cluster: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  institute: {
     type: String,
     required: true,
     trim: true
@@ -31,33 +36,40 @@ const registrationSchema = new mongoose.Schema({
     lowercase: true
   },
 
-  // Previous Experience
+  // Experience
   leadershipRoles: {
     type: String,
     required: true
   },
-  majorEvents: {
+  yourPosition: {
     type: String,
     required: true
   },
-  teamStrategy: {
+  otherPositionName: {
+    type: String,
+    required: false // Only required if 'Other Leadership Position' is selected
+  },
+  nameOfEntity: {
     type: String,
     required: true
   },
-  multitaskingAbility: {
-    type: String,
+  sop: {
+    type: String, // Store file path
     required: true
-  },
-
-  // Academic Info
-  cgpa: {
-    type: Number,
-    required: true,
-    min: 0,
-    max: 10
   },
   resume: {
     type: String, // Store the file path
+    required: true
+  },
+  linkedinAccount: {
+    type: String,
+    required: true,
+    trim: true
+  },
+
+  // Recommendation
+  recommendationLetter: {
+    type: String, // Store file path
     required: true
   },
 
