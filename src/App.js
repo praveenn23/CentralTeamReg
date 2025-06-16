@@ -9,7 +9,6 @@ import Evaluation from './components/Evaluation';
 
 function Header() {
   const navigate = useNavigate();
-<<<<<<< HEAD
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(!!localStorage.getItem('adminToken'));
 
   useEffect(() => {
@@ -29,10 +28,6 @@ function Header() {
     setIsAdminLoggedIn(false); // Update state to reflect logout
     navigate('/');
   };
-=======
-  // For this test, simplify Header to only its JSX structure.
-  // The logic for isAdminLoggedIn, useEffect, and handleLogout will be re-added later.
->>>>>>> 9178e3a (commit)
 
   return (
     <header className="header">
@@ -42,23 +37,17 @@ function Header() {
         </Link>
       </div>
       <div className="admin-section">
-<<<<<<< HEAD
         {isAdminLoggedIn ? (
           <button onClick={handleLogout} className="admin-button">Logout</button>
         ) : (
           <Link to="/admin/login" className="admin-button">Admin Login</Link>
         )}
-=======
-        {/* Temporarily hardcode a simple link for testing the header rendering */}
-        <Link to="/admin/login" className="admin-button">Admin Login (Test)</Link>
->>>>>>> 9178e3a (commit)
       </div>
     </header>
   );
 }
 
 function RegistrationForm() {
-<<<<<<< HEAD
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     // Section 1: Student Details
@@ -334,24 +323,14 @@ function RegistrationForm() {
       </div>
     </div>
   );
-=======
-  // Temporarily empty this component for the header test
-  return <div>Registration Form - Not rendered for Header test</div>;
->>>>>>> 9178e3a (commit)
 }
 
 function App() {
   return (
     <Router>
-<<<<<<< HEAD
       <Header />
       <Routes>
         <Route path="/" element={<RegistrationForm />} />
-=======
-      <Header /> {/* This is the ONLY intended Header render */}
-      <Routes>
-        <Route path="/" element={<RegistrationForm />} /> {/* This will now just show the test message */}
->>>>>>> 9178e3a (commit)
         <Route path="/success" element={<SuccessPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
