@@ -131,17 +131,29 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [showOtherPositionField, setShowOtherPositionField] = useState(false);
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [sectionErrors, setSectionErrors] = useState({});
 
-  // Clear errors and reset submission attempt when activeSection changes
+  // Clear errors when activeSection changes
   useEffect(() => {
+    console.log(`[useEffect] activeSection changed to: ${activeSection}`);
     setSectionErrors({});
-    setHasAttemptedSubmit(false);
-  }, [activeSection]);
+    // Explicitly set all field errors to false when section changes
+    const newFieldErrors = {};
+    for (const key in formData) {
+      newFieldErrors[key] = false;
+    }
+    setFieldErrors(newFieldErrors);
+    console.log('[useEffect] fieldErrors reset to:', newFieldErrors);
+  }, [activeSection, formData]); // Add formData to dependency array
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // Clear error for the current field as user starts typing
+    setFieldErrors(prev => {
+      console.log(`[handleInputChange] Clearing error for ${name}. Previous errors:`, prev);
+      return { ...prev, [name]: false };
+    });
     if (name === 'phoneNumber') {
       // Ensure it always starts with +91 and only allows digits after
       if (!value.startsWith('+91')) {
@@ -175,10 +187,20 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: files[0]
-    }));
+    if (files && files[0]) {
+      try {
+        validateFileSize(files[0]);
+        setFormData(prev => ({
+          ...prev,
+          [name]: files[0]
+        }));
+        // Clear error for the current field
+        setFieldErrors(prev => ({ ...prev, [name]: false }));
+      } catch (error) {
+        setFieldErrors(prev => ({ ...prev, [name]: true }));
+        setSectionErrors(prev => ({ ...prev, [activeSection]: error.message }));
+      }
+    }
   };
 
   const handleTermsChange = (index) => {
@@ -189,71 +211,74 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
   };
 
   const validateCurrentSection = () => {
-    let currentSectionError = '';
+    let errors = {};
     let isValid = true;
 
     switch (activeSection) {
       case 'student-details':
-        if (!formData.fullName || !formData.uid || !formData.cluster || !formData.institute || !formData.phoneNumber || !formData.email) {
-          currentSectionError = 'Please fill in all Student Details fields.';
-          isValid = false;
-        }
-        if (isValid && !/[0-9]{10}$/.test(formData.phoneNumber)) {
-          currentSectionError = 'Phone number must be exactly 10 digits long and start with +91.';
-          isValid = false;
-        }
-        if (isValid && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
-          currentSectionError = 'Please enter a valid email address.';
-          isValid = false;
-        }
+        if (!formData.fullName) { errors.fullName = true; isValid = false; }
+        if (!formData.uid) { errors.uid = true; isValid = false; }
+        if (!formData.cluster) { errors.cluster = true; isValid = false; }
+        if (!formData.institute) { errors.institute = true; isValid = false; }
+        if (!formData.phoneNumber || !/[0-9]{10}$/.test(formData.phoneNumber.substring(3))) { errors.phoneNumber = true; isValid = false; }
+        if (!formData.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) { errors.email = true; isValid = false; }
         break;
       case 'experience':
-        if (!formData.leadershipRoles || !formData.yourPosition || (showOtherPositionField && !formData.otherPositionName) || !formData.nameOfEntity || !formData.sop || !formData.linkedinAccount || !formData.resume) {
-          currentSectionError = 'Please fill in all Experience fields.';
-          isValid = false;
-        }
+        if (!formData.leadershipRoles) { errors.leadershipRoles = true; isValid = false; }
+        if (!formData.yourPosition) { errors.yourPosition = true; isValid = false; }
+        if (showOtherPositionField && !formData.otherPositionName) { errors.otherPositionName = true; isValid = false; }
+        if (!formData.nameOfEntity) { errors.nameOfEntity = true; isValid = false; }
+        if (!formData.sop) { errors.sop = true; isValid = false; }
+        if (!formData.resume) { errors.resume = true; isValid = false; }
+        if (!formData.linkedinAccount) { errors.linkedinAccount = true; isValid = false; }
         break;
       case 'recommendation':
-        if (!formData.recommendationLetter) {
-          currentSectionError = 'Please upload your Recommendation Letter.';
-          isValid = false;
-        }
+        if (!formData.recommendationLetter) { errors.recommendationLetter = true; isValid = false; }
         break;
       case 'terms':
         if (formData.terms.some(term => !term)) {
-          currentSectionError = 'Please agree to all Terms & Conditions.';
+          formData.terms.forEach((term, index) => {
+            if (!term) errors[`terms-${index}`] = true;
+          });
           isValid = false;
         }
         break;
       default:
         isValid = true;
     }
-    return { isValid, currentSectionError };
+    return { isValid, errors };
   };
 
   const handleNext = () => {
-    setHasAttemptedSubmit(true);
-    const { isValid, currentSectionError } = validateCurrentSection();
+    console.log(`[handleNext] Attempting to go to next section from: ${activeSection}`);
+    const { isValid, errors } = validateCurrentSection();
 
     if (isValid) {
+      console.log(`[handleNext] Current section (${activeSection}) is valid. Navigating.`);
       const sections = ['student-details', 'experience', 'recommendation', 'terms'];
       const currentIndex = sections.indexOf(activeSection);
       if (currentIndex < sections.length - 1) {
         setActiveSection(sections[currentIndex + 1]);
         setSectionErrors({});
+        setFieldErrors({}); // Clear all field errors on successful navigation
+        console.log('[handleNext] fieldErrors cleared after successful navigation.');
       }
     } else {
-      setSectionErrors(prev => ({ ...prev, [activeSection]: currentSectionError }));
+      console.log(`[handleNext] Current section (${activeSection}) is invalid. Setting errors:`, errors);
+      setFieldErrors(errors); // Set specific field errors
+      setSectionErrors(prev => ({ ...prev, [activeSection]: 'Please fill in all required fields.' }));
     }
   };
 
   const handlePrevious = () => {
+    console.log(`[handlePrevious] Attempting to go to previous section from: ${activeSection}`);
     const sections = ['student-details', 'experience', 'recommendation', 'terms'];
     const currentIndex = sections.indexOf(activeSection);
     if (currentIndex > 0) {
       setActiveSection(sections[currentIndex - 1]);
       setSectionErrors({});
-      setHasAttemptedSubmit(false);
+      setFieldErrors({}); // Clear field errors when navigating back
+      console.log('[handlePrevious] fieldErrors cleared after navigating back.');
     }
   };
 
@@ -266,49 +291,93 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
   };
 
   const submitForm = async (formData) => {
+    const maxRetries = 3;
+    let retryCount = 0;
+
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://central-team-reg-backend.onrender.com';
+
+    const attemptSubmit = async () => {
+      try {
+        console.log('Starting form submission...');
+        
+        // Log form data before sending
+        console.log('Form data being sent:');
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes timeout
+
+        const response = await fetch(`${API_BASE_URL}/api/registration`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json',
+            'Connection': 'keep-alive',
+            'Keep-Alive': 'timeout=120'
+          },
+          cache: 'no-cache',
+          mode: 'cors',
+          keepalive: true,
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Server error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Submission successful:', result);
+        setSuccess('Registration submitted successfully!');
+        setSectionErrors({});
+        navigate('/success');
+
+      } catch (err) {
+        console.error('Submission error:', err);
+        
+        // Handle network errors and retry
+        if ((err.name === 'TypeError' && err.message.includes('NetworkError')) || 
+            err.name === 'AbortError') {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.log(`Retrying submission (attempt ${retryCount} of ${maxRetries})...`);
+            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount)); // Exponential backoff
+            return attemptSubmit();
+          }
+        }
+
+        let errorMessage = 'Failed to submit registration. ';
+        
+        if (err.name === 'AbortError') {
+          errorMessage += 'Request timed out. Please try again.';
+        } else if (err.message.includes('File too large')) {
+          errorMessage += 'One or more files are too large. Maximum size is 10MB per file.';
+        } else if (err.message.includes('Invalid file type')) {
+          errorMessage += 'One or more files are not in the correct format. Only PDF and Word documents are allowed.';
+        } else if (err.message.includes('Server error')) {
+          errorMessage += 'Server error occurred. Please try again later. If the problem persists, please contact support.';
+        } else if (err.message.includes('ERR_HTTP2_PROTOCOL_ERROR')) {
+          errorMessage += 'Connection error. Please try again. If the problem persists, please try using a different browser.';
+        } else if (err.name === 'TypeError' && err.message.includes('NetworkError')) {
+          errorMessage += 'Network error. Please check your internet connection and try again.';
+        } else {
+          errorMessage += err.message || 'Please try again.';
+        }
+        
+        setSectionErrors(prev => ({ ...prev, [activeSection]: errorMessage }));
+        setSuccess('');
+      }
+    };
+
     try {
-      console.log('Starting form submission...');
-      
-      // Log form data before sending
-      console.log('Form data being sent:');
-      for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
-      }
-
-      const response = await fetch('https://central-team-reg-backend.onrender.com/api/registration', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'application/json'
-        },
-        // Force HTTP/1.1
-        cache: 'no-cache',
-        mode: 'cors',
-        credentials: 'include',
-        // Disable HTTP/2
-        keepalive: true,
-        // Increase timeout
-        signal: AbortSignal.timeout(120000) // 2 minutes
-      });
-
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Server error: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('Submission successful:', result);
-      setSuccess('Registration submitted successfully!');
-      setSectionErrors({}); // Clear all section errors on successful submission
-      navigate('/success');
-
-    } catch (err) {
-      console.error('Submission error:', err);
-      setSectionErrors(prev => ({ ...prev, [activeSection]: err.message || 'An unexpected error occurred. Please try again.' }));
-      setSuccess('');
+      await attemptSubmit();
     } finally {
       setLoading(false);
     }
@@ -316,35 +385,35 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setHasAttemptedSubmit(true);
+    console.log(`[handleSubmit] Attempting to submit from: ${activeSection}`);
     setLoading(true);
     setSectionErrors({});
     setSuccess('');
+    setFieldErrors({}); // Clear field errors at the start of submission attempt
+    console.log('[handleSubmit] fieldErrors cleared at start of submission.');
 
-    const { isValid, currentSectionError } = validateCurrentSection();
+    const { isValid, errors } = validateCurrentSection();
 
     if (isValid) {
+      console.log(`[handleSubmit] Current section (${activeSection}) is valid. Submitting.`);
       const submitFormData = new FormData();
+      
+      // Add all form fields
       for (const key in formData) {
         if (formData[key] instanceof File) {
-          try {
-            validateFileSize(formData[key]);
-            submitFormData.append(key, formData[key]);
-          } catch (fileError) {
-            setSectionErrors(prev => ({ ...prev, [activeSection]: fileError.message }));
-            setLoading(false);
-            return;
-          }
+          submitFormData.append(key, formData[key]);
         } else if (key === 'terms') {
           submitFormData.append(key, JSON.stringify(formData[key]));
-        } else {
+        } else if (formData[key] !== null && formData[key] !== undefined) {
           submitFormData.append(key, formData[key]);
         }
       }
 
       await submitForm(submitFormData);
     } else {
-      setSectionErrors(prev => ({ ...prev, [activeSection]: currentSectionError }));
+      console.log(`[handleSubmit] Current section (${activeSection}) is invalid. Setting errors:`, errors);
+      setFieldErrors(errors); // Set specific field errors
+      setSectionErrors(prev => ({ ...prev, [activeSection]: 'Please fill in all required fields.' }));
       setLoading(false);
     }
   };
@@ -367,7 +436,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.fullName ? 'input-error' : ''}`}
+                  className={`${fieldErrors['fullName'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -381,7 +450,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.uid ? 'input-error' : ''}`}
+                  className={`${fieldErrors['uid'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -394,7 +463,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.cluster ? 'input-error' : ''}`}
+                  className={`${fieldErrors['cluster'] ? 'input-error' : ''}`}
                 >
                   <option value="">Select Cluster</option>
                   {clusters.map((c, i) => <option key={i} value={c}>{c}</option>)}
@@ -410,7 +479,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.institute ? 'input-error' : ''}`}
+                  className={`${fieldErrors['institute'] ? 'input-error' : ''}`}
                 >
                   <option value="">Select Institute</option>
                   {institutes.map((inst, i) => <option key={i} value={inst}>{inst}</option>)}
@@ -430,7 +499,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && (!formData.phoneNumber || !/[0-9]{10}$/.test(formData.phoneNumber)) ? 'input-error' : ''}`}
+                  className={`${fieldErrors['phoneNumber'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -444,7 +513,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && (!formData.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) ? 'input-error' : ''}`}
+                  className={`${fieldErrors['email'] ? 'input-error' : ''}`}
                 />
               </div>
             </div>
@@ -468,7 +537,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`leadership-roles-textarea ${hasAttemptedSubmit && !formData.leadershipRoles ? 'input-error' : ''}`}
+                  className={`leadership-roles-textarea ${fieldErrors['leadershipRoles'] ? 'input-error' : ''}`}
                 ></textarea>
               </div>
               <div className="input-group">
@@ -481,7 +550,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.yourPosition ? 'input-error' : ''}`}
+                  className={`${fieldErrors['yourPosition'] ? 'input-error' : ''}`}
                 >
                   <option value="">Select Position</option>
                   <option value="President">President</option>
@@ -506,7 +575,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                     autoComplete="off"
                     onInvalid={(e) => e.preventDefault()}
                     formNoValidate
-                    className={`${hasAttemptedSubmit && !formData.otherPositionName ? 'input-error' : ''}`}
+                    className={`${fieldErrors['otherPositionName'] ? 'input-error' : ''}`}
                   />
                 </div>
               )}
@@ -521,7 +590,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.nameOfEntity ? 'input-error' : ''}`}
+                  className={`${fieldErrors['nameOfEntity'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group full-width">
@@ -536,7 +605,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.sop ? 'input-error' : ''}`}
+                  className={`${fieldErrors['sop'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -551,7 +620,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${hasAttemptedSubmit && !formData.resume ? 'input-error' : ''}`}
+                  className={`${fieldErrors['resume'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -566,7 +635,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
                   placeholder="https://www.linkedin.com/in/yourprofile"
-                  className={`${hasAttemptedSubmit && !formData.linkedinAccount ? 'input-error' : ''}`}
+                  className={`${fieldErrors['linkedinAccount'] ? 'input-error' : ''}`}
                 />
               </div>
             </div>
@@ -583,18 +652,18 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
             <div className="input-group full-width">
               <label htmlFor="recommendationLetter">Upload Recommendation Letter <span className="required">*</span></label>
               <small>Max 10MB, PDF only</small>
-              <input
-                type="file"
+                <input
+                  type="file"
                 id="recommendationLetter"
-                name="recommendationLetter"
-                onChange={handleFileChange}
+                  name="recommendationLetter"
+                  onChange={handleFileChange}
                 accept=".pdf"
                 autoComplete="off"
                 onInvalid={(e) => e.preventDefault()}
                 formNoValidate
-                className={`${hasAttemptedSubmit && !formData.recommendationLetter ? 'input-error' : ''}`}
-              />
-            </div>
+                className={`${fieldErrors['recommendationLetter'] ? 'input-error' : ''}`}
+                />
+              </div>
             <div className="form-navigation">
               <button type="button" onClick={handlePrevious} className="nav-button">Previous</button>
               <button type="button" onClick={handleNext} className="nav-button">Next</button>
@@ -605,16 +674,16 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         return (
           <div className="form-section">
             <h2>Terms & Conditions</h2>
-            {hasAttemptedSubmit && sectionErrors['terms'] && <div className="error-message">{sectionErrors['terms']}</div>}
+            {fieldErrors['terms'] && <div className="error-message">{fieldErrors['terms']}</div>}
             <div className="terms-section">
               {[0, 1, 2, 3].map((index) => (
                 <div key={index} className="terms-item">
-                  <input
-                    type="checkbox"
+                <input
+                  type="checkbox"
                     id={`term-${index}`}
                     checked={formData.terms[index]}
                     onChange={() => handleTermsChange(index)}
-                    className={`${hasAttemptedSubmit && !formData.terms[index] ? 'input-error' : ''}`}
+                    className={`${fieldErrors[`terms-${index}`] ? 'input-error' : ''}`}
                   />
                   <label htmlFor={`term-${index}`}>
                     {index === 0 && 'I agree to abide by the rules and regulations of Chandigarh University and the club.'}
@@ -622,8 +691,8 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                     {index === 2 && 'I understand that submitting false information may lead to the cancellation of my registration.'}
                     {index === 3 && 'I grant permission for my resume and other submitted details to be reviewed for the purpose of club registration.'}
                     <span className="required">*</span>
-                  </label>
-                </div>
+              </label>
+            </div>
               ))}
             </div>
             <div className="form-navigation">
@@ -632,7 +701,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                 {loading ? 'Submitting...' : 'Submit Registration'}
               </button>
             </div>
-          </div>
+            </div>
         );
       default:
         return null;
@@ -652,59 +721,55 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
       novalidate
       autoComplete="off"
     >
-      <div className="form-layout">
+          <div className="form-layout">
         <div className={`sidebar ${isSidebarOpen ? 'active' : ''}`}>
-          <button
+              <button
             className="sidebar-item"
             onClick={() => {
               setActiveSection('student-details');
               setIsSidebarOpen(false);
-              setSectionErrors({}); // Clear all section errors
-              setHasAttemptedSubmit(false);
+              setSectionErrors({});
             }}
-          >
-            Student Details
-          </button>
-          <button
+              >
+                Student Details
+              </button>
+              <button
             className="sidebar-item"
             onClick={() => {
               setActiveSection('experience');
               setIsSidebarOpen(false);
-              setSectionErrors({}); // Clear all section errors
-              setHasAttemptedSubmit(false);
+              setSectionErrors({});
             }}
-          >
-            Experience
-          </button>
-          <button
+              >
+                Experience
+              </button>
+              <button
             className="sidebar-item"
             onClick={() => {
               setActiveSection('recommendation');
               setIsSidebarOpen(false);
-              setSectionErrors({}); // Clear all section errors
-              setHasAttemptedSubmit(false);
+              setSectionErrors({});
             }}
-          >
-            Recommendation
-          </button>
-          <button
+              >
+                Recommendation
+              </button>
+              <button
             className="sidebar-item"
             onClick={() => {
               setActiveSection('terms');
               setIsSidebarOpen(false);
-              setSectionErrors({}); // Clear all section errors
-              setHasAttemptedSubmit(false);
+              setSectionErrors({});
             }}
-          >
-            Terms & Conditions
-          </button>
-        </div>
+              >
+                Terms & Conditions
+              </button>
+            </div>
 
-        <div className="form-content">
-          {renderSection()}
-        </div>
-      </div>
-    </form>
+            <div className="form-content">
+              {renderSection()}
+            </div>
+          </div>
+        </form>
   );
 }
 
@@ -723,14 +788,14 @@ function App() {
     <Router>
       <div className="app">
         <Header isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} handleOverlayClick={handleOverlayClick} />
-        <Routes>
+      <Routes>
           <Route path="/" element={<RegistrationForm isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} handleOverlayClick={handleOverlayClick} />} />
-          <Route path="/success" element={<SuccessPage />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/manage-registrations" element={<ManageRegistrations />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/manage-registrations" element={<ManageRegistrations />} />
           <Route path="/admin/evaluate/:id" element={<Evaluation />} />
-        </Routes>
+      </Routes>
         <footer className="footer">© 2023 Chandigarh University. All rights reserved.</footer>
 
         {/* Sidebar Overlay - RENDERED HERE AT APP LEVEL */}

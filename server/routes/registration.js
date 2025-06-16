@@ -123,11 +123,13 @@ router.post('/', upload.fields([
     }
 
     // Create new registration
+    const termsArray = req.body.terms ? JSON.parse(req.body.terms) : [];
     const registration = new Registration({
       ...req.body,
       resume: req.files.resume[0].filename,
       sop: req.files.sop[0].filename,
       recommendationLetter: req.files.recommendationLetter[0].filename,
+      terms: termsArray,
       status: 'pending'
     });
 
