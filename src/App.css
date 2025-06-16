@@ -63,112 +63,105 @@
   }
 }
 
-.form-container {
-  flex: 1;
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-form {
+.form-layout {
   display: flex;
-  flex-direction: column;
   gap: 2rem;
+  min-height: 600px;
 }
 
-.form-section {
-  background-color: white;
+.sidebar {
+  width: 250px;
+  background: #F5F5DC;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-item {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #333; /* Darker color for better contrast on beige background */
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sidebar-item:hover {
+  background: #e0e0d0; /* A slightly darker beige for hover */
+  color: #212529;
+}
+
+.sidebar-item.active {
+  background: #f87171;
+  color: white;
+}
+
+.form-content {
+  flex: 1;
+  background: white;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: 1px solid #F5F5DC; /* beige border */
 }
 
-.form-section h2 {
-  margin-bottom: 1.5rem;
-  color: #333;
-  border-bottom: 2px solid #F5F5DC; /* beige */
-  padding-bottom: 0.5rem;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-label {
-  font-weight: 600;
-  color: #444;
-}
-
-input[type="text"],
-input[type="tel"],
-input[type="email"],
-input[type="number"] {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-
-textarea {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  min-height: 100px;
-  resize: vertical;
-}
-
-.terms {
-  display: flex;
-  flex-direction: column;
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
 }
 
-.terms-label {
+.input-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-navigation {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  font-weight: normal;
-  line-height: 1.5;
-}
-
-.terms-label input[type="checkbox"] {
-  margin-top: 4px;
-}
-
-.terms-label span {
-  flex: 1;
-}
-
-.submit-container {
-  display: flex;
-  justify-content: center;
+  justify-content: space-between;
   margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
 }
 
-.submit-button {
-  padding: 1rem 3rem;
-  background-color: #f87171; /* red-400 */
+.nav-button {
+  padding: 0.75rem 1.5rem;
+  background: #6c757d;
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 1.1rem;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s ease;
 }
 
-.submit-button:hover {
-  background-color: #ef4444; /* red-500 for hover state */
+.nav-button:hover {
+  background: #5a6268;
 }
 
-.submit-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+.required {
+  color: #dc3545;
+  margin-left: 4px;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+small {
+  display: block;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
 }
 
 .footer {
@@ -179,12 +172,17 @@ textarea {
 }
 
 @media (max-width: 768px) {
-  .form-container {
+  .form-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
     padding: 1rem;
   }
 
-  .form-section {
-    padding: 1.5rem;
+  .form-content {
+    padding: 1rem;
   }
 
   .header {
@@ -248,4 +246,23 @@ textarea {
   border-radius: 4px;
   margin-bottom: 1rem;
   border: 1px solid #a5d6a7;
+}
+
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  background: #f87171; /* Red color matching the active sidebar item */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background: #ef4444; /* A slightly darker red for hover effect */
+}
+
+.submit-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
