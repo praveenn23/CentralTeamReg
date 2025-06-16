@@ -319,6 +319,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
           },
           cache: 'no-cache',
           mode: 'cors',
+          credentials: 'omit',
           keepalive: true,
           signal: controller.signal
         });
