@@ -334,7 +334,7 @@ function App() {
         <Route path="/success" element={<SuccessPage />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/registrations" element={<ManageRegistrations />} />
+        <Route path="/admin/manage-registrations" element={<ManageRegistrations />} />
         <Route path="/admin/evaluations/:registrationId" element={<Evaluation />} />
       </Routes>
     </Router>
