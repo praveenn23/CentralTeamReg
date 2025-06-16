@@ -165,7 +165,7 @@ function RegistrationForm() {
           setError('Please fill in all Student Details fields.');
           return false;
         }
-        if (!/^\+91\d{10}$/.test(formData.phoneNumber)) {
+        if (!/[0-9]{10}$/.test(formData.phoneNumber)) {
           setError('Phone number must be exactly 10 digits long and start with +91.');
           return false;
         }
@@ -316,7 +316,7 @@ function RegistrationForm() {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  pattern="^\+91\d{10}$"
+                 
                   maxLength="13"
                   title="Phone number must be 10 digits long and start with +91"
                   required
