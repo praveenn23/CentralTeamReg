@@ -5,6 +5,14 @@ const Admin = require('../models/Admin');
 const Registration = require('../models/Registration');
 const Evaluation = require('../models/Evaluation');
 const auth = require('../middleware/auth');
+const rateLimit = require('express-rate-limit');
+
+// Rate limiting for login attempts
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per window
+  message: { message: 'Too many login attempts, please try again after 15 minutes' }
+});
 
 // Test admin route
 router.get('/test', (req, res) => {
@@ -13,52 +21,26 @@ router.get('/test', (req, res) => {
 });
 
 // Admin login
-router.post('/login', async (req, res) => {
-  console.log('Login attempt received:', {
-    body: req.body,
-    headers: req.headers,
-    url: req.url,
-    method: req.method
-  });
-
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      console.log('Missing credentials');
-      return res.status(400).json({ 
-        message: 'Username and password are required' 
-      });
+      return res.status(400).json({ message: 'Username and password are required' });
     }
 
-    console.log('Looking for admin with username:', username);
-    const admin = await Admin.findOne({ username });
+    const admin = await Admin.findOne({ username }).select('+password');
     
-    if (!admin) {
-      console.log('Admin not found');
-      return res.status(401).json({ 
-        message: 'Invalid credentials' 
-      });
+    if (!admin || !(await admin.comparePassword(password))) {
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    console.log('Comparing passwords');
-    const isMatch = await admin.comparePassword(password);
-    
-    if (!isMatch) {
-      console.log('Password mismatch');
-      return res.status(401).json({ 
-        message: 'Invalid credentials' 
-      });
-    }
-
-    console.log('Generating token');
     const token = jwt.sign(
       { id: admin._id, username: admin.username },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
 
-    console.log('Login successful');
     res.json({
       token,
       admin: {
@@ -68,11 +50,8 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error details:', error);
-    res.status(500).json({ 
-      message: 'An error occurred during login',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'An error occurred during login' });
   }
 });
 
@@ -97,16 +76,45 @@ router.get('/profile', auth, async (req, res) => {
 // Get all registrations (admin only)
 router.get('/registrations', auth, async (req, res) => {
   try {
-    const registrations = await Registration.find()
-      .sort({ submittedAt: -1 })
-      .select('-terms'); // Exclude terms array from response
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    res.json(registrations);
+    // Build query based on filters
+    const query = {};
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+    if (req.query.search) {
+      query.$or = [
+        { fullName: { $regex: req.query.search, $options: 'i' } },
+        { uid: { $regex: req.query.search, $options: 'i' } }
+      ];
+    }
+
+    // Get total count for pagination
+    const total = await Registration.countDocuments(query);
+
+    // Get paginated results with lean() for better performance
+    const registrations = await Registration.find(query)
+      .sort({ submittedAt: -1 })
+      .select('-terms')
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    res.json({
+      registrations,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Error fetching registrations:', error);
-    res.status(500).json({ 
-      message: 'An error occurred while fetching registrations' 
-    });
+    res.status(500).json({ message: 'An error occurred while fetching registrations' });
   }
 });
 
@@ -214,40 +222,67 @@ router.post('/setup', async (req, res) => {
 // Get evaluations for approved registrations
 router.get('/evaluations', auth, async (req, res) => {
   try {
-    console.log('Fetching evaluations...');
-    
-    // Get all approved registrations
-    const approvedRegistrations = await Registration.find({ status: 'approved' });
-    console.log(`Found ${approvedRegistrations.length} approved registrations`);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    // Get or create evaluations for each approved registration
-    const evaluations = await Promise.all(
-      approvedRegistrations.map(async (registration) => {
-        let evaluation = await Evaluation.findOne({ registrationId: registration._id });
-        
-        if (!evaluation) {
-          console.log(`Creating new evaluation for registration ${registration._id}`);
-          evaluation = new Evaluation({ registrationId: registration._id });
-          await evaluation.save();
-        }
+    // Use aggregation to get all data in a single query
+    const [evaluations, total] = await Promise.all([
+      Registration.aggregate([
+        { $match: { status: 'approved' } },
+        {
+          $lookup: {
+            from: 'evaluations',
+            localField: '_id',
+            foreignField: 'registrationId',
+            as: 'evaluation'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            fullName: 1,
+            uid: 1,
+            evaluation: { $arrayElemAt: ['$evaluation', 0] }
+          }
+        },
+        { $sort: { 'evaluation.createdAt': -1 } },
+        { $skip: skip },
+        { $limit: limit }
+      ]),
+      Registration.countDocuments({ status: 'approved' })
+    ]);
 
-        return {
-          _id: registration._id,
-          fullName: registration.fullName,
-          uid: registration.uid,
-          ...evaluation.toObject()
-        };
-      })
-    );
+    // Create evaluations for registrations that don't have one
+    const evaluationsToCreate = evaluations
+      .filter(e => !e.evaluation)
+      .map(e => ({
+        registrationId: e._id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }));
 
-    console.log(`Returning ${evaluations.length} evaluations`);
-    res.json(evaluations);
+    if (evaluationsToCreate.length > 0) {
+      await Evaluation.insertMany(evaluationsToCreate);
+    }
+
+    res.json({
+      evaluations: evaluations.map(e => ({
+        _id: e._id,
+        fullName: e.fullName,
+        uid: e.uid,
+        ...(e.evaluation || {})
+      })),
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Error fetching evaluations:', error);
-    res.status(500).json({ 
-      message: 'An error occurred while fetching evaluations',
-      error: error.message 
-    });
+    res.status(500).json({ message: 'An error occurred while fetching evaluations' });
   }
 });
 
