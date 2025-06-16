@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Evaluation.css';
 
@@ -8,11 +8,7 @@ const Evaluation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchEvaluations();
-  }, []);
-
-  const fetchEvaluations = async () => {
+  const fetchEvaluations = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       if (!token) {
@@ -42,7 +38,11 @@ const Evaluation = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchEvaluations();
+  }, [fetchEvaluations]);
 
   const validateScore = (value, maxScore) => {
     const numValue = parseInt(value);

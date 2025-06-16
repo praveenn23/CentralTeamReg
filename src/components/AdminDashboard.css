@@ -1,42 +1,97 @@
 .admin-dashboard {
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .admin-dashboard h1 {
   text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
+  color: #2c3e50;
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  animation: slideInFromTop 0.8s ease-out;
 }
 
 .dashboard-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  padding: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+  padding: 1.5rem;
 }
 
 .option-card {
-  background: white;
-  border-radius: 10px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
+  text-align: center;
 }
 
 .option-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
 }
 
 .option-card h2 {
-  color: #2c3e50;
+  color: #34495e;
   margin-bottom: 1rem;
+  font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .option-card p {
-  color: #666;
-  line-height: 1.5;
+  color: #555555;
+  line-height: 1.6;
+  font-size: 1.1rem;
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 2rem 1rem;
+  }
+  .admin-dashboard h1 {
+    font-size: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  .dashboard-options {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0.5rem;
+  }
+  .option-card {
+    padding: 2rem;
+  }
+  .option-card h2 {
+    font-size: 1.5rem;
+  }
+  .option-card p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 1.5rem 0.5rem;
+  }
+  .admin-dashboard h1 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+  .option-card {
+    padding: 1.5rem;
+  }
+  .option-card h2 {
+    font-size: 1.3rem;
+  }
+  .option-card p {
+    font-size: 0.9rem;
+  }
 } 

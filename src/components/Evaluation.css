@@ -1,13 +1,16 @@
 .evaluation {
-  padding: 20px;
+  padding: 2.5rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  animation: fadeIn 0.8s ease-out;
 }
 
-.evaluation h1 {
+.evaluation h2 {
   text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
+  color: #2c3e50; /* Darker, more professional heading color */
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  font-weight: 700;
 }
 
 .evaluation-content {
@@ -26,110 +29,221 @@
 
 .table-container {
   overflow-x: auto;
-  margin-top: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 2.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Softer shadow */
+  border: 1px solid #e0e0e0; /* Subtle border */
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px;
+  min-width: 1100px; /* Ensure table is wide enough */
 }
 
 th, td {
-  padding: 12px;
+  padding: 1.2rem 1.5rem; /* Increased padding */
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f0f0f0; /* Lighter border */
 }
 
 th {
-  background-color: #f8f9fa;
+  background-color: #f8f8f8; /* Lighter header background */
   font-weight: 600;
-  color: #333;
+  color: #34495e; /* Darker header text */
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+td {
+  color: #555555;
+  font-size: 0.95rem;
 }
 
 tr:hover {
-  background-color: #f8f9fa;
+  background-color: #fcfcfc; /* Subtle hover effect */
 }
 
 input[type="number"] {
-  width: 60px;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  width: 70px; /* Wider input for scores */
+  padding: 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
   text-align: center;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input[type="number"]:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #f87171; /* Highlight on focus */
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
 }
 
 input[type="number"]:invalid {
   border-color: #dc3545;
-  background-color: #fff8f8;
+  background-color: #fff0f0;
 }
 
 select {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  min-width: 120px;
+  padding: 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  min-width: 140px;
   cursor: pointer;
+  font-size: 0.95rem;
+  color: #555555;
+  appearance: none; /* Remove default arrow */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%23333%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1.2em;
+  padding-right: 2.2rem; /* Make space for custom arrow */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
 }
 
-/* Style for selected option */
-select option[value="selected"] {
-  background-color: #d4edda;
-  color: #155724;
+select[value="Selected"] {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
 }
 
-/* Style for not selected option */
-select option[value="notSelected"] {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* Style for the select when selected value is "selected" */
-select[value="selected"] {
-  background-color: #d4edda;
-  color: #155724;
-  border-color: #c3e6cb;
-}
-
-/* Style for the select when selected value is "notSelected" */
-select[value="notSelected"] {
-  background-color: #f8d7da;
-  color: #721c24;
-  border-color: #f5c6cb;
+select[value="Not Selected"] {
+  background-color: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
 }
 
 .loading {
   text-align: center;
-  padding: 20px;
+  padding: 2rem;
+  font-size: 1.2rem;
   color: #666;
 }
 
 .error {
   color: #dc3545;
-  padding: 10px;
-  margin: 10px 0;
-  background-color: #f8d7da;
+  padding: 15px;
+  margin: 1.5rem auto;
+  background-color: #ffebee;
   border: 1px solid #f5c6cb;
-  border-radius: 4px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 600px;
+  font-size: 1rem;
 }
 
-/* Add styles for the total column */
 td:last-child {
   font-weight: bold;
   color: #28a745;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive adjustments for Evaluation Page */
+@media (max-width: 1200px) {
+  .evaluation {
+    padding: 2rem 1.5rem;
+  }
+  table {
+    min-width: 900px;
+  }
+  th, td {
+    padding: 1rem 1.2rem;
+  }
+  input[type="number"] {
+    width: 60px;
+  }
+}
+
+@media (max-width: 992px) {
+  .evaluation {
+    padding: 1.5rem 1rem;
+  }
+  .evaluation h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+  table {
+    min-width: 800px;
+  }
+  th, td {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+  input[type="number"] {
+    width: 50px;
+    padding: 8px;
+  }
+  select {
+    min-width: 110px;
+    padding: 8px;
+    font-size: 0.85rem;
+    padding-right: 1.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .evaluation {
+    padding: 1rem 0.5rem;
+  }
+  .evaluation h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+  table {
+    min-width: 600px;
+  }
+  th, td {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  input[type="number"] {
+    width: 45px;
+    padding: 6px;
+  }
+  select {
+    min-width: 100px;
+    padding: 6px;
+    font-size: 0.8rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .evaluation {
+    padding: 0.75rem 0.25rem;
+  }
+  .evaluation h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  table {
+    min-width: 400px; /* Allow horizontal scroll on small devices */
+  }
+  th, td {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  input[type="number"] {
+    width: 40px;
+  }
+  select {
+    min-width: 90px;
+    padding: 5px;
+    font-size: 0.75rem;
+    padding-right: 1.2rem;
+  }
 } 
