@@ -3,70 +3,152 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #f0f2f5;
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .admin-login-card {
-  background: white;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  padding: 50px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  animation: fadeIn 0.8s ease-out;
 }
 
 .admin-login-card h2 {
   text-align: center;
-  color: #333;
-  margin-bottom: 30px;
+  color: #2c3e50;
+  margin-bottom: 35px;
+  font-size: 28px;
+  font-weight: 700;
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .input-group label {
   display: block;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: 500;
+  margin-bottom: 10px;
+  color: #34495e;
+  font-weight: 600;
+  font-size: 15px;
 }
 
 .input-group input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
   font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
 }
 
 .login-button {
   width: 100%;
-  padding: 12px;
+  padding: 15px;
   background-color: #f87171;
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  letter-spacing: 0.5px;
 }
 
 .login-button:hover {
   background-color: #ef4444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(248, 113, 113, 0.4);
 }
 
 .login-button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .error-message {
   background-color: #ffebee;
   color: #c62828;
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
   text-align: center;
+  border: 1px solid #ef9a9a;
+  font-size: 15px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .admin-login-card {
+    padding: 35px;
+    margin: 0 15px;
+  }
+  .admin-login-card h2 {
+    font-size: 24px;
+    margin-bottom: 25px;
+  }
+  .input-group label {
+    font-size: 14px;
+  }
+  .input-group input {
+    padding: 12px;
+    font-size: 15px;
+  }
+  .login-button {
+    padding: 13px;
+    font-size: 17px;
+  }
+  .error-message {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-login-card {
+    padding: 25px;
+    margin: 0 10px;
+  }
+  .admin-login-card h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  .input-group {
+    margin-bottom: 20px;
+  }
+  .input-group label {
+    font-size: 13px;
+  }
+  .input-group input {
+    padding: 10px;
+    font-size: 14px;
+  }
+  .login-button {
+    padding: 10px;
+    font-size: 16px;
+    margin-top: 15px;
+  }
+  .error-message {
+    padding: 10px;
+    font-size: 13px;
+  }
 } 

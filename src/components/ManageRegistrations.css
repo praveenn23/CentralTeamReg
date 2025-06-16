@@ -1,87 +1,115 @@
 .manage-registrations {
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 2.5rem 2rem;
+  max-width: 1300px;
   margin: 0 auto;
+  animation: fadeIn 0.8s ease-out;
 }
 
 .manage-registrations h1 {
   text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
+  color: #2c3e50;
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  font-weight: 700;
 }
 
 .registrations-table-container {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   overflow-x: auto;
+  border: 1px solid #e0e0e0;
 }
 
 .registrations-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: 900px;
 }
 
 .registrations-table th,
 .registrations-table td {
-  padding: 1rem;
+  padding: 1.2rem 1.5rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .registrations-table th {
-  background-color: #f8f9fa;
+  background-color: #f8f8f8;
   font-weight: 600;
-  color: #2c3e50;
+  color: #34495e;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.registrations-table td {
+  color: #555555;
+  font-size: 0.95rem;
+}
+
+.registrations-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .registrations-table tr:hover {
-  background-color: #f8f9fa;
+  background-color: #fcfcfc;
 }
 
 .status-select {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
+  padding: 0.35rem 1rem;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #ccc;
   cursor: pointer;
   outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%23333%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1.2em;
+  padding-right: 2.2rem;
 }
 
 .status-select.pending {
-  background-color: #fff3cd;
-  color: #856404;
+  background-color: #fff8e1;
+  color: #ffa000;
+  border-color: #ffecb3;
 }
 
 .status-select.approved {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-color: #c8e6c9;
 }
 
 .status-select.rejected {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
 }
 
 .action-button {
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   margin-right: 0.5rem;
   cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .action-button.view {
-  background-color: #007bff;
+  background-color: #f87171;
   color: white;
 }
 
-.action-button:hover {
-  opacity: 0.9;
+.action-button.view:hover {
+  background-color: #ef4444;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(248, 113, 113, 0.3);
 }
 
 .loading {
@@ -107,27 +135,33 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeInOverlay 0.3s ease-out;
 }
 
 .modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  max-width: 600px;
+  background: #ffffff;
+  padding: 3rem;
+  border-radius: 12px;
+  max-width: 650px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  animation: slideInFromBottom 0.4s ease-out;
 }
 
 .modal-content h2 {
   color: #2c3e50;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.8rem;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
 }
 
 .registration-details {
@@ -135,49 +169,200 @@
 }
 
 .registration-details p {
-  margin: 0.5rem 0;
-  line-height: 1.6;
+  margin: 0.8rem 0;
+  line-height: 1.7;
+  font-size: 1rem;
+  color: #444444;
+}
+
+.registration-details p strong {
+  color: #2c3e50;
 }
 
 .experience-section {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #f0f0f0;
 }
 
 .experience-section h3 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
+  color: #34495e;
+  margin-bottom: 1.2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .resume-link {
   display: inline-block;
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.5rem;
   background-color: #28a745;
   color: white;
   text-decoration: none;
-  border-radius: 5px;
-  transition: background-color 0.2s;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
 .resume-link:hover {
   background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 
 .close-button {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 1.2rem;
+  right: 1.2rem;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 2rem;
   cursor: pointer;
-  color: #666;
+  color: #888;
   padding: 0.5rem;
   line-height: 1;
+  transition: color 0.3s ease;
 }
 
 .close-button:hover {
-  color: #333;
+  color: #555;
+  transform: rotate(90deg);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive adjustments for Manage Registrations */
+@media (max-width: 1024px) {
+  .manage-registrations {
+    padding: 2rem 1.5rem;
+  }
+  .registrations-table {
+    min-width: 700px;
+  }
+  .registrations-table th,
+  .registrations-table td {
+    padding: 1rem 1.2rem;
+  }
+  .modal-content {
+    padding: 2.5rem;
+  }
+  .modal-content h2 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .manage-registrations {
+    padding: 1.5rem 1rem;
+  }
+  .manage-registrations h1 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+  .registrations-table {
+    min-width: 500px;
+  }
+  .registrations-table th,
+  .registrations-table td {
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+  .status-select {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    padding-right: 2rem;
+  }
+  .action-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    margin-right: 0.3rem;
+  }
+  .modal-content {
+    padding: 2rem;
+    width: 95%;
+  }
+  .modal-content h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+  }
+  .registration-details p {
+    font-size: 0.9rem;
+    margin: 0.6rem 0;
+  }
+  .experience-section h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+  .resume-link {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+  .close-button {
+    font-size: 1.8rem;
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .manage-registrations {
+    padding: 1rem 0.5rem;
+  }
+  .manage-registrations h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .registrations-table th,
+  .registrations-table td {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  .status-select {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    padding-right: 1.8rem;
+  }
+  .action-button {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  .modal-content {
+    padding: 1.5rem;
+  }
+  .modal-content h2 {
+    font-size: 1.4rem;
+  }
+  .registration-details p {
+    font-size: 0.85rem;
+  }
+  .experience-section h3 {
+    font-size: 1.2rem;
+  }
+  .resume-link {
+    width: 100%;
+    text-align: center;
+    padding: 0.7rem 0;
+  }
+  .close-button {
+    font-size: 1.5rem;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
 } 

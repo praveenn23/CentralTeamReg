@@ -2,77 +2,168 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const Registration = require('../models/Registration');
 const { sendRegistrationEmail } = require('../utils/emailService');
 
-// Configure multer for file upload
+// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    const uploadDir = path.join(__dirname, '../uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // Store only the filename
-    const uniqueFilename = Date.now() + '-' + file.originalname;
-    cb(null, uniqueFilename);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
+// File filter function
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only PDF and Word documents are allowed.'), false);
+  }
+};
+
+// Configure multer upload
 const upload = multer({
   storage: storage,
-  fileFilter: function (req, file, cb) {
-    const filetypes = /pdf|doc|docx/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (extname && mimetype) {
-      return cb(null, true);
-    } else {
-      cb('Error: Only PDF and Word documents are allowed!');
-    }
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
+    files: 3 // Maximum 3 files
   }
 });
 
-// Submit registration
+// Handle file upload errors
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        message: 'File too large. Maximum size is 10MB per file.'
+      });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        message: 'Too many files. Maximum 3 files allowed.'
+      });
+    }
+    return res.status(400).json({
+      message: `File upload error: ${err.message}`
+    });
+  }
+  next(err);
+};
+
+// Registration route
 router.post('/', upload.fields([
   { name: 'resume', maxCount: 1 },
   { name: 'sop', maxCount: 1 },
-  { name: 'recommendationLetter', maxCount: 1 },
-]), async (req, res) => {
+  { name: 'recommendationLetter', maxCount: 1 }
+]), handleMulterError, async (req, res) => {
   try {
-    const registrationData = {
-      ...req.body,
-      resume: req.files && req.files.resume ? req.files.resume[0].filename : null,
-      sop: req.files && req.files.sop ? req.files.sop[0].filename : null,
-      recommendationLetter: req.files && req.files.recommendationLetter ? req.files.recommendationLetter[0].filename : null,
-      terms: JSON.parse(req.body.terms)
-    };
+    console.log('Received registration request');
+    console.log('Files:', req.files);
+    console.log('Body:', req.body);
 
-    // Ensure other new fields are correctly included if they exist in req.body
-    if (req.body.yourPosition) registrationData.yourPosition = req.body.yourPosition;
-    if (req.body.otherPositionName) registrationData.otherPositionName = req.body.otherPositionName;
-    if (req.body.nameOfEntity) registrationData.nameOfEntity = req.body.nameOfEntity;
-    if (req.body.linkedinAccount) registrationData.linkedinAccount = req.body.linkedinAccount;
-
-    const registration = new Registration(registrationData);
-    await registration.save();
-
-    // Send confirmation email
-    try {
-      await sendRegistrationEmail(registration.email, registration.fullName);
-    } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError);
-      // Continue with the response even if email fails
+    // Validate required fields
+    const requiredFields = ['fullName', 'uid', 'cluster', 'institute', 'phoneNumber', 'email', 'leadershipRoles', 'yourPosition', 'nameOfEntity', 'terms'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: `Missing required fields: ${missingFields.join(', ')}`
+      });
     }
 
-    res.status(201).json({
-      success: true,
-      message: 'Registration submitted successfully',
-      data: registration
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(req.body.email)) {
+      return res.status(400).json({
+        message: 'Invalid email format'
+      });
+    }
+
+    // Check for duplicate UID or email
+    const existingRegistration = await Registration.findOne({
+      $or: [
+        { uid: req.body.uid },
+        { email: req.body.email }
+      ]
     });
+
+    if (existingRegistration) {
+      return res.status(400).json({
+        message: existingRegistration.uid === req.body.uid ? 
+          'UID already registered' : 
+          'Email already registered'
+      });
+    }
+
+    // Validate file uploads
+    if (!req.files) {
+      return res.status(400).json({
+        message: 'No files uploaded'
+      });
+    }
+
+    const requiredFiles = ['resume', 'sop', 'recommendationLetter'];
+    const missingFiles = requiredFiles.filter(fileType => !req.files[fileType]);
+    
+    if (missingFiles.length > 0) {
+      return res.status(400).json({
+        message: `Missing required files: ${missingFiles.join(', ')}`
+      });
+    }
+
+    // Create new registration
+    const registration = new Registration({
+      ...req.body,
+      resume: req.files.resume[0].filename,
+      sop: req.files.sop[0].filename,
+      recommendationLetter: req.files.recommendationLetter[0].filename,
+      status: 'pending'
+    });
+
+    // Save registration
+    await registration.save();
+    console.log('Registration saved successfully');
+
+    res.status(201).json({
+      message: 'Registration submitted successfully',
+      registration: {
+        id: registration._id,
+        fullName: registration.fullName,
+        uid: registration.uid,
+        cluster: registration.cluster,
+        status: registration.status
+      }
+    });
+
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
+    console.error('Registration error:', error);
+    
+    // Clean up uploaded files if registration fails
+    if (req.files) {
+      Object.values(req.files).forEach(files => {
+        files.forEach(file => {
+          const filePath = path.join(__dirname, '../uploads', file.filename);
+          fs.unlink(filePath, (err) => {
+            if (err) console.error('Error deleting file:', err);
+          });
+        });
+      });
+    }
+
+    res.status(500).json({
+      message: 'Error processing registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

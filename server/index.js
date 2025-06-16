@@ -1,142 +1,200 @@
+require('dotenv').config();
+
+// Verify required environment variables
+const requiredEnvVars = ['MONGODB_URI', 'PORT', 'FRONTEND_URL', 'JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingEnvVars.length > 0) {
+  console.error('Missing required environment variables:', missingEnvVars);
+  process.exit(1);
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs');
+const morgan = require('morgan');
 const Admin = require('./models/Admin');
-
-// Load environment variables
-dotenv.config();
-
-// Verify environment variables
-console.log('Environment Check:');
-console.log('MONGODB_URI:', process.env.MONGODB_URI ? '✓ Set' : '✗ Missing');
-console.log('PORT:', process.env.PORT ? '✓ Set' : '✗ Missing');
-console.log('FRONTEND_URL:', process.env.FRONTEND_URL ? '✓ Set' : '✗ Missing');
-console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✓ Set' : '✗ Missing');
 
 const app = express();
 
-// CORS configuration
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure CORS with specific headers
 app.use(cors({
-  origin: '*', // Keep permissive for now to rule out CORS issues
-  credentials: true,
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Length', 'X-Requested-With'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
 }));
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Re-add static files
+// Increase payload size limit for file uploads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Request logging middleware
+// Serve static files from uploads directory with caching
+app.use('/uploads', express.static(uploadsDir, {
+  maxAge: '1d',
+  etag: true,
+  lastModified: true
+}));
+
+// Add request logging
+app.use(morgan('dev'));
+
+// Add security headers
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - Request: ${req.method} ${req.url}`);
-  // console.log('Request Headers:', req.headers); // Comment out verbose logging for now
-  // console.log('Request Body:', req.body); // Comment out verbose logging for now
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
 
-// Routes
+// Import routes
 const registrationRoutes = require('./routes/registration');
 const adminRoutes = require('./routes/admin');
 
-// Mount routes with explicit paths
+// Use routes
 app.use('/api/registration', registrationRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Basic root route
-app.get('/', (req, res) => {
-  console.log('Root route hit');
-  res.send('Backend root is working!');
-});
-
-// Test route
-app.get('/api/test', (req, res) => {
-  console.log('Test route hit');
-  res.json({ message: 'API is working' });
-});
-
 // Health check route
-app.get('/health', (req, res) => {
-  console.log('Health check route hit');
-  res.json({ 
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-    routes: {
-      admin: '/api/admin',
-      registration: '/api/registration',
-      test: '/api/test',
-      health: '/health',
-      root: '/'
-    }
-  });
+app.get('/health', async (req, res) => {
+  try {
+    // Check MongoDB connection
+    const dbState = mongoose.connection.readyState;
+    const dbStatus = dbState === 1 ? 'connected' : 'disconnected';
+    
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: {
+        status: dbStatus,
+        state: dbState
+      },
+      memory: process.memoryUsage()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  res.status(err.status || 500).json({
-    message: err.message || 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err : {}
-  });
-});
-
-// Handle 404
-app.use((req, res) => {
-  console.log('404 Not Found:', req.method, req.url);
-  res.status(404).json({ 
-    message: 'Route not found',
-    path: req.url,
-    method: req.method,
-    availableRoutes: [
-      '/api/test',
-      '/health',
-      '/api/admin/login',
-      '/api/admin/test',
-      '/api/registration',
-      '/'
-    ]
-  });
-});
-
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/club-registration', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(async () => {
-  console.log('Connected to MongoDB');
   
-  // Create initial admin user if it doesn't exist
-  try {
-    const adminCount = await Admin.countDocuments();
-    if (adminCount === 0) {
-      const admin = new Admin({
-        username: process.env.ADMIN_USERNAME || 'admin',
-        password: process.env.ADMIN_PASSWORD || 'admin123',
-        email: process.env.ADMIN_EMAIL || 'admin@example.com'
-      });
-      await admin.save();
-      console.log('Initial admin user created successfully');
-    }
-  } catch (error) {
-    console.error('Error creating initial admin:', error);
+  // Handle file upload errors
+  if (err.name === 'MulterError') {
+    return res.status(400).json({
+      message: `File upload error: ${err.message}`,
+      code: err.code
+    });
   }
-})
-.catch((err) => console.error('MongoDB connection error:', err));
+  
+  // Handle validation errors
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      message: err.message,
+      errors: Object.values(err.errors).map(e => e.message)
+    });
+  }
+  
+  // Handle MongoDB duplicate key errors
+  if (err.code === 11000) {
+    return res.status(400).json({
+      message: 'Duplicate entry found',
+      field: Object.keys(err.keyPattern)[0]
+    });
+  }
+  
+  // Handle other errors
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal server error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    message: `Route ${req.originalUrl} not found`
+  });
+});
+
+// MongoDB connection with retry
+const connectDB = async (retries = 5, delay = 5000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+      });
+      console.log('MongoDB connected successfully');
+      
+      // Create initial admin user if it doesn't exist
+      try {
+        const adminCount = await Admin.countDocuments();
+        if (adminCount === 0) {
+          const admin = new Admin({
+            username: process.env.ADMIN_USERNAME || 'admin',
+            password: process.env.ADMIN_PASSWORD || 'admin123',
+            email: process.env.ADMIN_EMAIL || 'admin@example.com'
+          });
+          await admin.save();
+          console.log('Initial admin user created successfully');
+        }
+      } catch (error) {
+        console.error('Error creating initial admin:', error);
+      }
+      return;
+    } catch (error) {
+      console.error(`MongoDB connection attempt ${i + 1} failed:`, error.message);
+      if (i < retries - 1) {
+        console.log(`Retrying in ${delay/1000} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  console.error('Failed to connect to MongoDB after multiple attempts');
+  process.exit(1);
+};
+
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log('Available routes:');
-  console.log('- GET /');
-  console.log('- GET /api/test');
-  console.log('- GET /health');
-  console.log('- POST /api/admin/login');
-  console.log('- GET /api/admin/test');
-  console.log('- POST /api/registration');
+const server = app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
+  await connectDB();
+  
+  // Log available routes
+  console.log('\nAvailable routes:');
+  app._router.stack.forEach(r => {
+    if (r.route && r.route.path) {
+      console.log(`${Object.keys(r.route.methods).join(', ').toUpperCase()} ${r.route.path}`);
+    }
+  });
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('Server closed');
+    mongoose.connection.close(false, () => {
+      console.log('MongoDB connection closed');
+      process.exit(0);
+    });
+  });
 }); 

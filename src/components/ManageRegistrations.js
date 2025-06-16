@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ManageRegistrations.css';
 
@@ -10,11 +10,7 @@ const ManageRegistrations = () => {
   const [selectedRegistration, setSelectedRegistration] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    fetchRegistrations();
-  }, []);
-
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       if (!token) {
@@ -45,7 +41,11 @@ const ManageRegistrations = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchRegistrations();
+  }, [fetchRegistrations]);
 
   const handleViewRegistration = (registration) => {
     setSelectedRegistration(registration);
