@@ -53,11 +53,7 @@ function Header({ isSidebarOpen, toggleSidebar, handleOverlayClick }) {
         </Link>
       </div>
       <div className="admin-section">
-        {isAdminLoggedIn ? (
-          <button onClick={handleLogout} className="admin-button">Logout</button>
-        ) : (
-          <Link to="/admin/login" className="admin-button">Admin Login</Link>
-        )}
+        {/* Admin Login/Logout removed as per request */}
       </div>
       {/* Mobile Navigation Toggle (Hamburger Menu) */}
       <button
@@ -79,6 +75,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
     uid: '',
     cluster: '',
     institute: '',
+    department: '',
     phoneNumber: '+91',
     email: '',
 
@@ -87,6 +84,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
     yourPosition: '',
     otherPositionName: '',
     nameOfEntity: '',
+    isServingLeadPosition: '',
     sop: null,
     resume: null,
     linkedinAccount: '',
@@ -133,6 +131,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
   const [showOtherPositionField, setShowOtherPositionField] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [sectionErrors, setSectionErrors] = useState({});
+  const [showValidationErrors, setShowValidationErrors] = useState(false); // New state to control error visibility
 
   // Clear errors when activeSection changes
   useEffect(() => {
@@ -144,6 +143,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
       newFieldErrors[key] = false;
     }
     setFieldErrors(newFieldErrors);
+    setShowValidationErrors(false); // Hide validation errors on section change
     console.log('[useEffect] fieldErrors reset to:', newFieldErrors);
   }, [activeSection, formData]); // Add formData to dependency array
 
@@ -220,6 +220,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         if (!formData.uid) { errors.uid = true; isValid = false; }
         if (!formData.cluster) { errors.cluster = true; isValid = false; }
         if (!formData.institute) { errors.institute = true; isValid = false; }
+        if (!formData.department) { errors.department = true; isValid = false; }
         if (!formData.phoneNumber || !/[0-9]{10}$/.test(formData.phoneNumber.substring(3))) { errors.phoneNumber = true; isValid = false; }
         if (!formData.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) { errors.email = true; isValid = false; }
         break;
@@ -228,6 +229,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         if (!formData.yourPosition) { errors.yourPosition = true; isValid = false; }
         if (showOtherPositionField && !formData.otherPositionName) { errors.otherPositionName = true; isValid = false; }
         if (!formData.nameOfEntity) { errors.nameOfEntity = true; isValid = false; }
+        if (!formData.isServingLeadPosition) { errors.isServingLeadPosition = true; isValid = false; }
         if (!formData.sop) { errors.sop = true; isValid = false; }
         if (!formData.resume) { errors.resume = true; isValid = false; }
         if (!formData.linkedinAccount) { errors.linkedinAccount = true; isValid = false; }
@@ -261,12 +263,14 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         setActiveSection(sections[currentIndex + 1]);
         setSectionErrors({});
         setFieldErrors({}); // Clear all field errors on successful navigation
+        setShowValidationErrors(false); // Hide errors after successful navigation
         console.log('[handleNext] fieldErrors cleared after successful navigation.');
       }
     } else {
       console.log(`[handleNext] Current section (${activeSection}) is invalid. Setting errors:`, errors);
       setFieldErrors(errors); // Set specific field errors
       setSectionErrors(prev => ({ ...prev, [activeSection]: 'Please fill in all required fields.' }));
+      setShowValidationErrors(true); // Show validation errors if current section is invalid
     }
   };
 
@@ -391,6 +395,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
     setSectionErrors({});
     setSuccess('');
     setFieldErrors({}); // Clear field errors at the start of submission attempt
+    setShowValidationErrors(true); // Always show errors on submission attempt
     console.log('[handleSubmit] fieldErrors cleared at start of submission.');
 
     const { isValid, errors } = validateCurrentSection();
@@ -424,7 +429,8 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
       case 'student-details':
         return (
           <div className="form-section">
-            <h2>Student Details</h2>
+            <h2>Application for Club Core Committee</h2>
+            <h3>Student Details</h3>
             <div className="form-grid">
               <div className="input-group">
                 <label htmlFor="fullName">Full Name <span className="required">*</span></label>
@@ -437,7 +443,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['fullName'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['fullName'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -451,7 +457,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['uid'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['uid'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -464,7 +470,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['cluster'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['cluster'] ? 'input-error' : ''}`}
                 >
                   <option value="">Select Cluster</option>
                   {clusters.map((c, i) => <option key={i} value={c}>{c}</option>)}
@@ -480,11 +486,25 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['institute'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['institute'] ? 'input-error' : ''}`}
                 >
                   <option value="">Select Institute</option>
                   {institutes.map((inst, i) => <option key={i} value={inst}>{inst}</option>)}
                 </select>
+              </div>
+              <div className="input-group">
+                <label htmlFor="department">Department <span className="required">*</span></label>
+                <input
+                  type="text"
+                  id="department"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  autoComplete="off"
+                  onInvalid={(e) => e.preventDefault()}
+                  formNoValidate
+                  className={`${showValidationErrors && fieldErrors['department'] ? 'input-error' : ''}`}
+                />
               </div>
               <div className="input-group">
                 <label htmlFor="phoneNumber">Phone Number <span className="required">*</span></label>
@@ -500,7 +520,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['phoneNumber'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['phoneNumber'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -514,7 +534,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['email'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['email'] ? 'input-error' : ''}`}
                 />
               </div>
             </div>
@@ -529,7 +549,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
             <h2>Experience</h2>
             <div className="form-grid">
               <div className="input-group">
-                <label htmlFor="leadershipRoles">Describe your leadership roles and responsibilities in past projects/events/organizations. <span className="required">*</span></label>
+                <label htmlFor="leadershipRoles">Describe your leadership roles and responsibilities in past events/organizations. <span className="required">*</span></label>
                 <textarea
                   id="leadershipRoles"
                   name="leadershipRoles"
@@ -538,11 +558,11 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`leadership-roles-textarea ${fieldErrors['leadershipRoles'] ? 'input-error' : ''}`}
+                  className={`leadership-roles-textarea ${showValidationErrors && fieldErrors['leadershipRoles'] ? 'input-error' : ''}`}
                 ></textarea>
               </div>
               <div className="input-group">
-                <label htmlFor="yourPosition">Your Position <span className="required">*</span></label>
+                <label htmlFor="yourPosition">Your Position in entity ( entity - club department society community professional society ) <span className="required">*</span></label>
                 <select
                   id="yourPosition"
                   name="yourPosition"
@@ -551,16 +571,14 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['yourPosition'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['yourPosition'] ? 'input-error' : ''}`}
                 >
                   <option value="">Select Position</option>
                   <option value="President">President</option>
                   <option value="Vice-President">Vice-President</option>
                   <option value="Secretary">Secretary</option>
+                  <option value="Joint Secretary">Joint Secretary</option>
                   <option value="Treasurer">Treasurer</option>
-                  <option value="Event Coordinator">Event Coordinator</option>
-                  <option value="Team Leader">Team Leader</option>
-                  <option value="Member">Member</option>
                   <option value="Other Leadership Position">Other Leadership Position</option>
                 </select>
               </div>
@@ -576,12 +594,12 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                     autoComplete="off"
                     onInvalid={(e) => e.preventDefault()}
                     formNoValidate
-                    className={`${fieldErrors['otherPositionName'] ? 'input-error' : ''}`}
+                    className={`${showValidationErrors && fieldErrors['otherPositionName'] ? 'input-error' : ''}`}
                   />
                 </div>
               )}
               <div className="input-group">
-                <label htmlFor="nameOfEntity">Name of the Entity/Organization <span className="required">*</span></label>
+                <label htmlFor="nameOfEntity">Name of the Entity <span className="required">*</span></label>
                 <input
                   type="text"
                   id="nameOfEntity"
@@ -591,8 +609,33 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['nameOfEntity'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['nameOfEntity'] ? 'input-error' : ''}`}
                 />
+              </div>
+              <div className="input-group">
+                <label>Are you already serving as lead position in any entity? <span className="required">*</span></label>
+                <div className="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      name="isServingLeadPosition"
+                      value="true"
+                      checked={formData.isServingLeadPosition === 'true'}
+                      onChange={handleInputChange}
+                    />
+                    <span></span> Yes
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="isServingLeadPosition"
+                      value="false"
+                      checked={formData.isServingLeadPosition === 'false'}
+                      onChange={handleInputChange}
+                    />
+                    <span></span> No
+                  </label>
+                </div>
               </div>
               <div className="input-group full-width">
                 <label htmlFor="sop">Statement of Purpose (SOP) <span className="required">*</span></label>
@@ -606,7 +649,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['sop'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['sop'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -621,7 +664,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   autoComplete="off"
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
-                  className={`${fieldErrors['resume'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['resume'] ? 'input-error' : ''}`}
                 />
               </div>
               <div className="input-group">
@@ -636,7 +679,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   onInvalid={(e) => e.preventDefault()}
                   formNoValidate
                   placeholder="https://www.linkedin.com/in/yourprofile"
-                  className={`${fieldErrors['linkedinAccount'] ? 'input-error' : ''}`}
+                  className={`${showValidationErrors && fieldErrors['linkedinAccount'] ? 'input-error' : ''}`}
                 />
               </div>
             </div>
@@ -662,7 +705,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                 autoComplete="off"
                 onInvalid={(e) => e.preventDefault()}
                 formNoValidate
-                className={`${fieldErrors['recommendationLetter'] ? 'input-error' : ''}`}
+                className={`${showValidationErrors && fieldErrors['recommendationLetter'] ? 'input-error' : ''}`}
                 />
               </div>
             <div className="form-navigation">
@@ -675,7 +718,6 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         return (
           <div className="form-section">
             <h2>Terms & Conditions</h2>
-            {fieldErrors['terms'] && <div className="error-message">{fieldErrors['terms']}</div>}
             <div className="terms-section">
               {[0, 1, 2, 3].map((index) => (
                 <div key={index} className="terms-item">
@@ -684,7 +726,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                     id={`term-${index}`}
                     checked={formData.terms[index]}
                     onChange={() => handleTermsChange(index)}
-                    className={`${fieldErrors[`terms-${index}`] ? 'input-error' : ''}`}
+                    className={`${showValidationErrors && fieldErrors[`terms-${index}`] ? 'input-error' : ''}`}
                   />
                   <label htmlFor={`term-${index}`}>
                     {index === 0 && 'I agree to abide by the rules and regulations of Chandigarh University and the club.'}

@@ -519,3 +519,69 @@ small {
     font-size: 0.8rem;
   }
 }
+
+/* Radio Button Group Styles */
+.radio-group {
+  display: flex;
+  gap: 1.5rem; /* Space between radio options */
+  margin-top: 0.5rem;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: normal; /* Override default label bolding if any */
+  color: #555;
+  transition: color 0.2s ease;
+}
+
+.radio-group label:hover {
+  color: #333;
+}
+
+.radio-group input[type="radio"] {
+  /* Hide the default radio button */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radio-group input[type="radio"] + span {
+  /* Custom radio button style */
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.radio-group input[type="radio"] + span::after {
+  /* Inner circle for checked state */
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #f87171; /* Highlight color */
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.radio-group input[type="radio"]:checked + span {
+  border-color: #f87171; /* Border color when checked */
+}
+
+.radio-group input[type="radio"]:checked + span::after {
+  transform: translate(-50%, -50%) scale(1); /* Scale up inner circle when checked */
+}
+
+.radio-group input[type="radio"]:focus + span {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2); /* Focus glow */
+}
