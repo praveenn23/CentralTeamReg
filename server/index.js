@@ -25,11 +25,15 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Configure CORS with specific headers
+const corsOrigins = [
+  'http://localhost:3000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+console.log('CORS Allowed Origins:', corsOrigins);
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    process.env.FRONTEND_URL
-  ].filter(Boolean), // Filter out null/undefined values
+  origin: corsOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Length', 'X-Requested-With'],
