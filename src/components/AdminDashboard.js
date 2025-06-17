@@ -13,7 +13,7 @@ const AdminDashboard = () => {
           <h2>Manage Registrations</h2>
           <p>View and manage all registration applications</p>
         </div>
-        <div className="option-card" onClick={() => navigate('/admin/evaluation')}>
+        <div className="option-card" onClick={() => navigate('/admin/evaluate')}>
           <h2>Evaluation</h2>
           <p>Evaluate and assess applications</p>
         </div>

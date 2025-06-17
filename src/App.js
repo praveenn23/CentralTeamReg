@@ -857,7 +857,8 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/manage-registrations" element={<ManageRegistrations />} />
-          <Route path="/admin/evaluate/:id" element={<Evaluation />} />
+        <Route path="/admin/evaluate" element={<Evaluation />} />
+        <Route path="/admin/evaluate/:id" element={<Evaluation />} />
       </Routes>
         <footer className="footer">© 2023 Chandigarh University. All rights reserved.</footer>
 

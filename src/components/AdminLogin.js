@@ -24,12 +24,16 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
+      // Ensure the API URL is properly formatted without double slashes
+      const apiUrl = process.env.REACT_APP_API_URL?.replace(/\/+$/, '');
+      const loginUrl = `${apiUrl}/api/admin/login`;
+
       console.log('Attempting login with:', {
-        url: `${process.env.REACT_APP_API_URL}/api/admin/login`,
+        url: loginUrl,
         credentials
       });
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/login`, {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

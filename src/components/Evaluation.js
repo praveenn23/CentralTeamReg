@@ -16,7 +16,8 @@ const Evaluation = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/evaluations`, {
+      const apiUrl = process.env.REACT_APP_API_URL?.replace(/\/+$/, '');
+      const response = await fetch(`${apiUrl}/api/admin/evaluations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -32,7 +33,7 @@ const Evaluation = () => {
       }
 
       const data = await response.json();
-      setEvaluations(data);
+      setEvaluations(data.evaluations || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -60,6 +61,7 @@ const Evaluation = () => {
         return;
       }
 
+      const apiUrl = process.env.REACT_APP_API_URL?.replace(/\/+$/, '');
       const validatedValue = validateScore(value, maxScore);
 
       // Update local state first for immediate feedback
@@ -72,7 +74,7 @@ const Evaluation = () => {
       );
 
       // Send update to server
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/evaluations/${registrationId}`, {
+      const response = await fetch(`${apiUrl}/api/admin/evaluations/${registrationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -107,6 +109,7 @@ const Evaluation = () => {
         return;
       }
 
+      const apiUrl = process.env.REACT_APP_API_URL?.replace(/\/+$/, '');
       // Update local state first for immediate feedback
       setEvaluations(prevEvaluations => 
         prevEvaluations.map(evaluation => 
@@ -117,7 +120,7 @@ const Evaluation = () => {
       );
 
       // Send update to server
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/evaluations/${registrationId}`, {
+      const response = await fetch(`${apiUrl}/api/admin/evaluations/${registrationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -173,12 +176,12 @@ const Evaluation = () => {
               <th>S. No.</th>
               <th>Name</th>
               <th>UID</th>
-              <th>Leadership (MM-20)</th>
-              <th>Prior Experience (MM-15)</th>
-              <th>Discipline (MM-15)</th>
-              <th>Academics (MM-15)</th>
-              <th>Attitude (MM-15)</th>
-              <th>Time Management (MM-20)</th>
+              <th>Leadership (20)</th>
+              <th>Prior Exp. (15)</th>
+              <th>Discipline (15)</th>
+              <th>Academics (15)</th>
+              <th>Attitude (15)</th>
+              <th>Time Mgmt. (20)</th>
               <th>Total</th>
               <th>Result</th>
             </tr>
