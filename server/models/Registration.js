@@ -23,6 +23,11 @@ const registrationSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  department: {
+    type: String,
+    required: true,
+    trim: true
+  },
   phoneNumber: {
     type: String,
     required: true,
@@ -51,6 +56,10 @@ const registrationSchema = new mongoose.Schema({
   },
   nameOfEntity: {
     type: String,
+    required: true
+  },
+  isServingLeadPosition: {
+    type: Boolean,
     required: true
   },
   sop: {
