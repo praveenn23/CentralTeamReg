@@ -9,14 +9,13 @@ import Evaluation from './components/Evaluation';
 
 function Header({ isSidebarOpen, toggleSidebar, handleOverlayClick }) {
   const navigate = useNavigate();
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(!!localStorage.getItem('adminToken'));
   const [isVisible, setIsVisible] = useState(true); // State to control header visibility
   const [lastScrollY, setLastScrollY] = useState(0); // State to track last scroll position
 
   useEffect(() => {
     // This effect ensures the button state updates if the token changes outside of direct logout
     const checkAdminStatus = () => {
-      setIsAdminLoggedIn(!!localStorage.getItem('adminToken'));
+      // setIsAdminLoggedIn(!!localStorage.getItem('adminToken')); // No longer needed as isAdminLoggedIn is removed
     };
     window.addEventListener('storage', checkAdminStatus);
 
@@ -38,12 +37,15 @@ function Header({ isSidebarOpen, toggleSidebar, handleOverlayClick }) {
     };
   }, [lastScrollY]); // Re-run effect when lastScrollY changes
 
+  // handleLogout is removed as it's not used in the current Header UI
+  /*
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminInfo');
-    setIsAdminLoggedIn(false); // Update state to reflect logout
+    // setIsAdminLoggedIn(false); // Update state to reflect logout
     navigate('/');
   };
+  */
 
   return (
     <header className={`header ${isVisible ? '' : 'header-hidden'}`}>
@@ -127,15 +129,15 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
 
   const [activeSection, setActiveSection] = useState('student-details');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
+  const [success, setSuccess] = useState(''); // This state is used before navigation to /success, keeping for now
   const [showOtherPositionField, setShowOtherPositionField] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [sectionErrors, setSectionErrors] = useState({});
+  const [sectionErrors, setSectionErrors] = useState({}); // This state is set on errors, will be used for displaying a general section error
   const [showValidationErrors, setShowValidationErrors] = useState(false); // New state to control error visibility
 
   // Clear errors when activeSection changes
   useEffect(() => {
-    console.log(`[useEffect] activeSection changed to: ${activeSection}`);
+    // console.log(`[useEffect] activeSection changed to: ${activeSection}`); // Removed unnecessary console.log
     setSectionErrors({});
     // Explicitly set all field errors to false when section changes
     const newFieldErrors = {};
@@ -144,14 +146,14 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
     }
     setFieldErrors(newFieldErrors);
     setShowValidationErrors(false); // Hide validation errors on section change
-    console.log('[useEffect] fieldErrors reset to:', newFieldErrors);
-  }, [activeSection, formData]); // Add formData to dependency array
+    // console.log('[useEffect] fieldErrors reset to:', newFieldErrors); // Removed unnecessary console.log
+  }, [activeSection]); // Removed formData from dependency array to prevent unnecessary re-runs
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     // Clear error for the current field as user starts typing
     setFieldErrors(prev => {
-      console.log(`[handleInputChange] Clearing error for ${name}. Previous errors:`, prev);
+      // console.log(`[handleInputChange] Clearing error for ${name}. Previous errors:`, prev); // Removed unnecessary console.log
       return { ...prev, [name]: false };
     });
     if (name === 'phoneNumber') {
@@ -221,8 +223,14 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         if (!formData.cluster) { errors.cluster = true; isValid = false; }
         if (!formData.institute) { errors.institute = true; isValid = false; }
         if (!formData.department) { errors.department = true; isValid = false; }
-        if (!formData.phoneNumber || !/[0-9]{10}$/.test(formData.phoneNumber.substring(3))) { errors.phoneNumber = true; isValid = false; }
-        if (!formData.email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) { errors.email = true; isValid = false; }
+        if (!formData.phoneNumber || !/[0-9]{10}$/.test(formData.phoneNumber.substring(3))) { 
+          errors.phoneNumber = true; 
+          isValid = false; 
+        }
+        if (!formData.email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) { 
+          errors.email = true; 
+          isValid = false; 
+        }
         break;
       case 'experience':
         if (!formData.leadershipRoles) { errors.leadershipRoles = true; isValid = false; }
@@ -232,7 +240,10 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         if (!formData.isServingLeadPosition) { errors.isServingLeadPosition = true; isValid = false; }
         if (!formData.sop) { errors.sop = true; isValid = false; }
         if (!formData.resume) { errors.resume = true; isValid = false; }
-        if (!formData.linkedinAccount) { errors.linkedinAccount = true; isValid = false; }
+        if (!formData.linkedinAccount || !/^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/.test(formData.linkedinAccount)) { 
+          errors.linkedinAccount = true; 
+          isValid = false; 
+        }
         break;
       case 'recommendation':
         if (!formData.recommendationLetter) { errors.recommendationLetter = true; isValid = false; }
@@ -252,11 +263,11 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
   };
 
   const handleNext = () => {
-    console.log(`[handleNext] Attempting to go to next section from: ${activeSection}`);
+    // console.log(`[handleNext] Attempting to go to next section from: ${activeSection}`); // Removed unnecessary console.log
     const { isValid, errors } = validateCurrentSection();
 
     if (isValid) {
-      console.log(`[handleNext] Current section (${activeSection}) is valid. Navigating.`);
+      // console.log(`[handleNext] Current section (${activeSection}) is valid. Navigating.`); // Removed unnecessary console.log
       const sections = ['student-details', 'experience', 'recommendation', 'terms'];
       const currentIndex = sections.indexOf(activeSection);
       if (currentIndex < sections.length - 1) {
@@ -264,10 +275,10 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         setSectionErrors({});
         setFieldErrors({}); // Clear all field errors on successful navigation
         setShowValidationErrors(false); // Hide errors after successful navigation
-        console.log('[handleNext] fieldErrors cleared after successful navigation.');
+        // console.log('[handleNext] fieldErrors cleared after successful navigation.'); // Removed unnecessary console.log
       }
     } else {
-      console.log(`[handleNext] Current section (${activeSection}) is invalid. Setting errors:`, errors);
+      // console.log(`[handleNext] Current section (${activeSection}) is invalid. Setting errors:`, errors); // Removed unnecessary console.log
       setFieldErrors(errors); // Set specific field errors
       setSectionErrors(prev => ({ ...prev, [activeSection]: 'Please fill in all required fields.' }));
       setShowValidationErrors(true); // Show validation errors if current section is invalid
@@ -275,14 +286,14 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
   };
 
   const handlePrevious = () => {
-    console.log(`[handlePrevious] Attempting to go to previous section from: ${activeSection}`);
+    // console.log(`[handlePrevious] Attempting to go to previous section from: ${activeSection}`); // Removed unnecessary console.log
     const sections = ['student-details', 'experience', 'recommendation', 'terms'];
     const currentIndex = sections.indexOf(activeSection);
     if (currentIndex > 0) {
       setActiveSection(sections[currentIndex - 1]);
       setSectionErrors({});
       setFieldErrors({}); // Clear field errors when navigating back
-      console.log('[handlePrevious] fieldErrors cleared after navigating back.');
+      // console.log('[handlePrevious] fieldErrors cleared after navigating back.'); // Removed unnecessary console.log
     }
   };
 
@@ -298,20 +309,18 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
     const maxRetries = 3;
     let retryCount = 0;
 
-    const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://central-team-reg-backend.onrender.com';
+    // Ensure API_BASE_URL does not have a trailing slash
+    const API_BASE_URL = (process.env.REACT_APP_API_URL || 'https://central-team-reg-backend.onrender.com').replace(/\/+$/, '');
 
     const attemptSubmit = async () => {
       try {
-        console.log('Starting form submission...');
-        
-        // Log form data before sending
-        console.log('Form data being sent:');
-        for (let pair of formData.entries()) {
-          console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
-        }
+        // console.log('Starting form submission...'); // Removed unnecessary console.log
+
+        // No client-side compression for PDFs/Word docs; files will be sent as is.
+        // If file size is a persistent issue, consider server-side compression or dedicated client-side libraries for these formats.
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
 
         const response = await fetch(`${API_BASE_URL}/api/registration`, {
           method: 'POST',
@@ -319,7 +328,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
           headers: {
             'Accept': 'application/json',
             'Connection': 'keep-alive',
-            'Keep-Alive': 'timeout=120'
+            'Keep-Alive': 'timeout=30'
           },
           cache: 'no-cache',
           mode: 'cors',
@@ -330,16 +339,13 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
 
         clearTimeout(timeoutId);
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || `Server error: ${response.status}`);
         }
 
         const result = await response.json();
-        console.log('Submission successful:', result);
+        // console.log('Submission successful:', result); // Removed unnecessary console.log
         setSuccess('Registration submitted successfully!');
         setSectionErrors({});
         navigate('/success');
@@ -347,13 +353,14 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
       } catch (err) {
         console.error('Submission error:', err);
         
-        // Handle network errors and retry
+        // Handle network errors and retry with exponential backoff
         if ((err.name === 'TypeError' && err.message.includes('NetworkError')) || 
             err.name === 'AbortError') {
           if (retryCount < maxRetries) {
             retryCount++;
-            console.log(`Retrying submission (attempt ${retryCount} of ${maxRetries})...`);
-            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount)); // Exponential backoff
+            const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 10000);
+            // console.log(`Retrying submission (attempt ${retryCount} of ${maxRetries}) after ${backoffTime}ms...`); // Removed unnecessary console.log
+            await new Promise(resolve => setTimeout(resolve, backoffTime));
             return attemptSubmit();
           }
         }
@@ -372,17 +379,25 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
           errorMessage += 'Connection error. Please try again. If the problem persists, please try using a different browser.';
         } else if (err.name === 'TypeError' && err.message.includes('NetworkError')) {
           errorMessage += 'Network error. Please check your internet connection and try again.';
+        } else if (err.message.includes('valid email address')) {
+          errorMessage = 'Please enter a valid email address.';
+        } else if (err.message.includes('valid LinkedIn profile URL')) {
+          errorMessage = 'Please enter a valid LinkedIn profile URL.';
         } else {
           errorMessage += err.message || 'Please try again.';
         }
         
         setSectionErrors(prev => ({ ...prev, [activeSection]: errorMessage }));
         setSuccess('');
+        throw err; // Re-throw to be caught by the outer try-catch for finally block
       }
     };
 
     try {
       await attemptSubmit();
+    } catch (err) {
+      // Catch re-thrown errors from attemptSubmit and handle the final loading state here
+      console.error('Final submission attempt failed or aborted:', err);
     } finally {
       setLoading(false);
     }
@@ -390,18 +405,18 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(`[handleSubmit] Attempting to submit from: ${activeSection}`);
+    // console.log(`[handleSubmit] Attempting to submit from: ${activeSection}`); // Removed unnecessary console.log
     setLoading(true);
     setSectionErrors({});
     setSuccess('');
     setFieldErrors({}); // Clear field errors at the start of submission attempt
     setShowValidationErrors(true); // Always show errors on submission attempt
-    console.log('[handleSubmit] fieldErrors cleared at start of submission.');
+    // console.log('[handleSubmit] fieldErrors cleared at start of submission.'); // Removed unnecessary console.log
 
     const { isValid, errors } = validateCurrentSection();
 
     if (isValid) {
-      console.log(`[handleSubmit] Current section (${activeSection}) is valid. Submitting.`);
+      // console.log(`[handleSubmit] Current section (${activeSection}) is valid. Submitting.`); // Removed unnecessary console.log
       const submitFormData = new FormData();
       
       // Add all form fields
@@ -417,7 +432,7 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
 
       await submitForm(submitFormData);
     } else {
-      console.log(`[handleSubmit] Current section (${activeSection}) is invalid. Setting errors:`, errors);
+      // console.log(`[handleSubmit] Current section (${activeSection}) is invalid. Setting errors:`, errors); // Removed unnecessary console.log
       setFieldErrors(errors); // Set specific field errors
       setSectionErrors(prev => ({ ...prev, [activeSection]: 'Please fill in all required fields.' }));
       setLoading(false);
@@ -536,6 +551,9 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   formNoValidate
                   className={`${showValidationErrors && fieldErrors['email'] ? 'input-error' : ''}`}
                 />
+                {showValidationErrors && fieldErrors['email'] && (
+                  <small className="error-text">Please enter a valid email address</small>
+                )}
               </div>
             </div>
             <div className="form-navigation">
@@ -681,6 +699,9 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
                   placeholder="https://www.linkedin.com/in/yourprofile"
                   className={`${showValidationErrors && fieldErrors['linkedinAccount'] ? 'input-error' : ''}`}
                 />
+                {showValidationErrors && fieldErrors['linkedinAccount'] && (
+                  <small className="error-text">Please enter a valid LinkedIn profile URL (e.g., https://www.linkedin.com/in/username)</small>
+                )}
               </div>
             </div>
             <div className="form-navigation">
@@ -761,7 +782,6 @@ function RegistrationForm({ isSidebarOpen, setIsSidebarOpen, handleOverlayClick 
         e.preventDefault();
       }}
       noValidate
-      novalidate
       autoComplete="off"
     >
           <div className="form-layout">

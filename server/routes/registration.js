@@ -45,15 +45,18 @@ const upload = multer({
 const handleMulterError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
+      console.warn('Multer error: File too large'); // Log the error
       return res.status(400).json({
         message: 'File too large. Maximum size is 10MB per file.'
       });
     }
     if (err.code === 'LIMIT_FILE_COUNT') {
+      console.warn('Multer error: Too many files'); // Log the error
       return res.status(400).json({
         message: 'Too many files. Maximum 3 files allowed.'
       });
     }
+    console.error(`Multer error: ${err.message}`); // Log other Multer errors
     return res.status(400).json({
       message: `File upload error: ${err.message}`
     });
@@ -68,64 +71,72 @@ router.post('/', upload.fields([
   { name: 'recommendationLetter', maxCount: 1 }
 ]), handleMulterError, async (req, res) => {
   try {
-    console.log('Received registration request');
-    console.log('Files:', req.files);
-    console.log('Body:', req.body);
-
-    // Validate required fields
-    const requiredFields = ['fullName', 'uid', 'cluster', 'institute', 'department', 'phoneNumber', 'email', 'leadershipRoles', 'yourPosition', 'nameOfEntity', 'isServingLeadPosition', 'terms'];
-    const missingFields = requiredFields.filter(field => !req.body[field]);
-    
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        message: `Missing required fields: ${missingFields.join(', ')}`
-      });
+    console.log('Backend: Received registration request');
+    console.log('Backend: Request body keys:', Object.keys(req.body));
+    if (req.files) {
+      console.log('Backend: Received files:', Object.keys(req.files));
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(req.body.email)) {
-      return res.status(400).json({
-        message: 'Invalid email format'
-      });
-    }
+    // Parallel validation of required fields and files
+    console.log('Backend: Starting parallel validation');
+    const validationPromises = [
+      // Validate required fields
+      (async () => {
+        const requiredFields = ['fullName', 'uid', 'cluster', 'institute', 'department', 'phoneNumber', 'email', 'leadershipRoles', 'yourPosition', 'nameOfEntity', 'isServingLeadPosition', 'terms'];
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+        if (missingFields.length > 0) {
+          throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+        }
+      })(),
 
-    // Check for duplicate UID or email
-    const existingRegistration = await Registration.findOne({
-      $or: [
-        { uid: req.body.uid },
-        { email: req.body.email }
-      ]
-    });
+      // Validate email format
+      (async () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(req.body.email)) {
+          throw new Error('Invalid email format');
+        }
+      })(),
 
-    if (existingRegistration) {
-      return res.status(400).json({
-        message: existingRegistration.uid === req.body.uid ? 
-          'UID already registered' : 
-          'Email already registered'
-      });
-    }
+      // Check for duplicate UID or email
+      (async () => {
+        const existingRegistration = await Registration.findOne({
+          $or: [
+            { uid: req.body.uid },
+            { email: req.body.email }
+          ]
+        });
 
-    // Validate file uploads
-    if (!req.files) {
-      return res.status(400).json({
-        message: 'No files uploaded'
-      });
-    }
+        if (existingRegistration) {
+          throw new Error(existingRegistration.uid === req.body.uid ? 
+            'UID already registered' : 
+            'Email already registered');
+        }
+      })(),
 
-    const requiredFiles = ['resume', 'sop', 'recommendationLetter'];
-    const missingFiles = requiredFiles.filter(fileType => !req.files[fileType]);
-    
-    if (missingFiles.length > 0) {
-      return res.status(400).json({
-        message: `Missing required files: ${missingFiles.join(', ')}`
-      });
-    }
+      // Validate file uploads
+      (async () => {
+        if (!req.files || Object.keys(req.files).length === 0) {
+          throw new Error('No files uploaded');
+        }
+
+        const requiredFiles = ['resume', 'sop', 'recommendationLetter'];
+        const missingFiles = requiredFiles.filter(fileType => !req.files[fileType]);
+        
+        if (missingFiles.length > 0) {
+          throw new Error(`Missing required files: ${missingFiles.join(', ')}`);
+        }
+      })()
+    ];
+
+    // Wait for all validations to complete
+    await Promise.all(validationPromises);
+    console.log('Backend: All validations passed');
 
     // Create new registration
     const termsArray = req.body.terms ? JSON.parse(req.body.terms) : [];
     const isServingLeadPositionBoolean = req.body.isServingLeadPosition === 'true';
 
+    console.log('Backend: Preparing registration object');
     const registration = new Registration({
       ...req.body,
       resume: req.files.resume[0].filename,
@@ -137,8 +148,9 @@ router.post('/', upload.fields([
     });
 
     // Save registration
+    console.log('Backend: Saving registration to database');
     await registration.save();
-    console.log('Registration saved successfully');
+    console.log('Backend: Registration saved successfully');
 
     res.status(201).json({
       message: 'Registration submitted successfully',
@@ -150,26 +162,55 @@ router.post('/', upload.fields([
         status: registration.status
       }
     });
+    console.log('Backend: Response sent');
+
+    // Send registration email in the background (non-blocking)
+    sendRegistrationEmail(registration.email, registration.fullName)
+      .then(() => console.log('Backend: Registration email sent successfully (background)'))
+      .catch(emailError => console.error('Backend: Error sending registration email (background):', emailError));
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Backend: Registration error:', error);
     
     // Clean up uploaded files if registration fails
     if (req.files) {
-      Object.values(req.files).forEach(files => {
-        files.forEach(file => {
-          const filePath = path.join(__dirname, '../uploads', file.filename);
-          fs.unlink(filePath, (err) => {
-            if (err) console.error('Error deleting file:', err);
-          });
-        });
-      });
+      console.log('Backend: Cleaning up uploaded files due to error');
+      await Promise.all(
+        Object.values(req.files).map(files =>
+          Promise.all(files.map(file =>
+            new Promise((resolve) => {
+              const filePath = path.join(__dirname, '../uploads', file.filename);
+              fs.unlink(filePath, (err) => {
+                if (err) console.error('Backend: Error deleting file:', err);
+                resolve();
+              });
+            })
+          ))
+        )
+      );
+      console.log('Backend: File cleanup complete');
     }
 
-    res.status(500).json({
-      message: 'Error processing registration',
+    // Determine appropriate status code and message
+    let statusCode = 500;
+    let errorMessage = 'Error processing registration';
+
+    if (error.message.includes('Missing required fields') || 
+        error.message.includes('Invalid email format') || 
+        error.message.includes('UID already registered') || 
+        error.message.includes('Email already registered') ||
+        error.message.includes('No files uploaded') ||
+        error.message.includes('Missing required files') ||
+        error.message.includes('Invalid file type')) {
+      statusCode = 400; // Bad Request for validation errors
+      errorMessage = error.message; // Use the specific validation error message
+    }
+
+    res.status(statusCode).json({
+      message: errorMessage,
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+    console.log('Backend: Error response sent');
   }
 });
 
