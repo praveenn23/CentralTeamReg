@@ -18,7 +18,11 @@ const ManageRegistrations = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/registrations`, {
+      // Ensure the API URL is properly formatted without double slashes
+      const apiUrl = process.env.REACT_APP_API_URL?.replace(/\/+$/, '');
+      const registrationsUrl = `${apiUrl}/api/admin/registrations`;
+
+      const response = await fetch(registrationsUrl, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -34,7 +38,7 @@ const ManageRegistrations = () => {
       }
 
       const data = await response.json();
-      setRegistrations(data);
+      setRegistrations(data.registrations || []);
     } catch (error) {
       setError('Error loading registrations. Please try again.');
       console.error('Error:', error);
@@ -48,6 +52,7 @@ const ManageRegistrations = () => {
   }, [fetchRegistrations]);
 
   const handleViewRegistration = (registration) => {
+    console.log('Resume filename:', registration.resume);
     setSelectedRegistration(registration);
     setShowModal(true);
   };
@@ -60,7 +65,10 @@ const ManageRegistrations = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/registrations/${registrationId}/status`, {
+      const apiUrl = process.env.REACT_APP_API_URL?.replace(/\/+$/, '');
+      const statusUrl = `${apiUrl}/api/admin/registrations/${registrationId}/status`;
+
+      const response = await fetch(statusUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +168,7 @@ const ManageRegistrations = () => {
               </div>
               {selectedRegistration.resume && (
                 <a 
-                  href={`${process.env.REACT_APP_API_URL}/uploads/${selectedRegistration.resume}`}
+                  href={`${process.env.REACT_APP_API_URL?.replace(/\/+$/, '')}/uploads/${selectedRegistration.resume}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="resume-link"
