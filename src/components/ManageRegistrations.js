@@ -53,6 +53,7 @@ const ManageRegistrations = () => {
 
   const handleViewRegistration = (registration) => {
     console.log('Resume filename:', registration.resume);
+    console.log('Terms data:', registration.terms);
     setSelectedRegistration(registration);
     setShowModal(true);
   };
@@ -156,25 +157,57 @@ const ManageRegistrations = () => {
               <p><strong>Name:</strong> {selectedRegistration.fullName}</p>
               <p><strong>UID:</strong> {selectedRegistration.uid}</p>
               <p><strong>Department:</strong> {selectedRegistration.department}</p>
-              <p><strong>Email:</strong> {selectedRegistration.email}</p>
               <p><strong>Phone:</strong> {selectedRegistration.phoneNumber}</p>
-              <p><strong>CGPA:</strong> {selectedRegistration.cgpa}</p>
+              <p><strong>Email:</strong> {selectedRegistration.email}</p>
+              <p><strong>Institute:</strong> {selectedRegistration.institute}</p>
+              <p><strong>Cluster:</strong> {selectedRegistration.cluster}</p>
               <div className="experience-section">
                 <h3>Previous Experience</h3>
                 <p><strong>Leadership Roles:</strong> {selectedRegistration.leadershipRoles}</p>
-                <p><strong>Major Events:</strong> {selectedRegistration.majorEvents}</p>
-                <p><strong>Team Strategy:</strong> {selectedRegistration.teamStrategy}</p>
-                <p><strong>Multitasking Ability:</strong> {selectedRegistration.multitaskingAbility}</p>
+                <p><strong>Your Position:</strong> {selectedRegistration.yourPosition}</p>
+                {selectedRegistration.otherPositionName && (
+                  <p><strong>Other Position Name:</strong> {selectedRegistration.otherPositionName}</p>
+                )}
+                <p><strong>Name of Entity:</strong> {selectedRegistration.nameOfEntity}</p>
+                <p><strong>Serving Lead Position:</strong> {selectedRegistration.isServingLeadPosition ? 'Yes' : 'No'}</p>
               </div>
+              <p><strong>LinkedIn Account:</strong> <a href={selectedRegistration.linkedinAccount} target="_blank" rel="noopener noreferrer">{selectedRegistration.linkedinAccount}</a></p>
+              <p><strong>Terms Accepted:</strong> {selectedRegistration.terms && selectedRegistration.terms.every(term => term === true) ? 'Yes' : 'No'}</p>
               {selectedRegistration.resume && (
-                <a 
-                  href={`${process.env.REACT_APP_API_URL?.replace(/\/+$/, '')}/uploads/${selectedRegistration.resume}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="resume-link"
-                >
-                  View Resume
-                </a>
+                <p>
+                  <a 
+                    href={`${process.env.REACT_APP_API_URL?.replace(/\/+$/, '')}/uploads/${selectedRegistration.resume}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="resume-link"
+                  >
+                    View Resume
+                  </a>
+                </p>
+              )}
+              {selectedRegistration.sop && (
+                <p>
+                  <a 
+                    href={`${process.env.REACT_APP_API_URL?.replace(/\/+$/, '')}/uploads/${selectedRegistration.sop}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="resume-link"
+                  >
+                    View Statement of Purpose (SOP)
+                  </a>
+                </p>
+              )}
+              {selectedRegistration.recommendationLetter && (
+                <p>
+                  <a 
+                    href={`${process.env.REACT_APP_API_URL?.replace(/\/+$/, '')}/uploads/${selectedRegistration.recommendationLetter}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="resume-link"
+                  >
+                    View Recommendation Letter
+                  </a>
+                </p>
               )}
             </div>
             <button 

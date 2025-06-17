@@ -127,6 +127,7 @@ router.get('/registrations/:id', auth, async (req, res) => {
         message: 'Registration not found' 
       });
     }
+    console.log('Backend: Sending registration data:', registration);
     res.json(registration);
   } catch (error) {
     console.error('Error fetching registration:', error);
